@@ -4,9 +4,24 @@ const SCENE_MAIN_MENU := "res://scenes/main_menu.tscn"
 ## Shipped sample loadout (proto IDs). Resolves to real names when catalog is synced.
 const BUNDLED_DEMO_LOADOUT := "res://data/bundled_sample_loadout.json"
 
-@onready var _status: Label = %StatusLabel
+const DECK_TILE_STYLE: StyleBoxFlat = preload("res://ui/deck_tile_style.tres")
+
+const COLOR_VALID := Color(0.32, 0.72, 0.42, 1)
+const COLOR_INVALID := Color(0.82, 0.35, 0.32, 1)
+const COLOR_NEUTRAL := Color(0.88, 0.9, 0.93, 1)
+const COLOR_WARN := Color(0.9, 0.62, 0.28, 1)
+
+const TILE_MIN := Vector2(240, 56)
+
+@onready var _catalog_summary: Label = %CatalogSummaryLabel
+@onready var _validation: Label = %ValidationLabel
+@onready var _toast: Label = %ToastLabel
+@onready var _toast_timer: Timer = %ToastTimer
+@onready var _save_button: Button = %SaveButton
+
 @onready var _chef_option: OptionButton = %ChefOption
 @onready var _main_count: Label = %MainCountLabel
+@onready var _main_progress: ProgressBar = %MainProgress
 @onready var _main_deck_list: GridContainer = %MainDeckList
 @onready var _rest_count: Label = %RestaurantCountLabel
 @onready var _rest_deck_list: GridContainer = %RestaurantDeckList
@@ -28,14 +43,23 @@ var _chef: Dictionary = {}
 var _chef_ids: Array = []
 
 var _catalog_ready: bool = false
-var _catalog_summary: String = ""
+var _catalog_summary_text: String = ""
+
+var _tile_style_hover: StyleBoxFlat
 
 
 func _ready() -> void:
+	_tile_style_hover = DECK_TILE_STYLE.duplicate() as StyleBoxFlat
+	_tile_style_hover.bg_color = _tile_style_hover.bg_color.lightened(0.09)
+
+	_toast_timer.timeout.connect(_on_toast_timeout)
+	_catalog_summary.text = ""
+	_toast.text = ""
+
 	SupabaseClient.batch_progress.connect(_on_batch_progress)
 	SupabaseClient.batch_finished.connect(_on_catalog_batch_finished)
 	%BackButton.pressed.connect(_on_back_pressed)
-	%SaveButton.pressed.connect(_on_save_pressed)
+	_save_button.pressed.connect(_on_save_pressed)
 	%LoadButton.pressed.connect(_on_load_pressed)
 	%SampleDeckButton.pressed.connect(_on_sample_deck_pressed)
 	%OfflineDemoButton.pressed.connect(_on_offline_demo_pressed)
@@ -48,14 +72,55 @@ func _ready() -> void:
 	_show_chef.toggled.connect(_on_filters_changed)
 
 	_tables_data.clear()
-	_status.text = "Loading catalog…"
+	_set_validation("Loading catalog…", false, true)
+	_save_button.disabled = true
 	if SupabaseClient.load_catalog_from_cache():
 		return
 	if not SupabaseClient.load_config():
-		_status.text = "Missing cache and config: run ../launcher (Sync) or add res://secrets/supabase.local.json — copy secrets/supabase.local.example.json."
+		_set_validation(
+			"Missing cache and config: run ../launcher (Sync) or add res://secrets/supabase.local.json — copy secrets/supabase.local.example.json.",
+			false,
+			false
+		)
 		return
-	_status.text = "Fetching catalog…"
+	_set_validation("Fetching catalog…", false, true)
 	SupabaseClient.fetch_all_tables()
+
+
+func _on_toast_timeout() -> void:
+	_toast.text = ""
+
+
+func _clear_toast() -> void:
+	_toast_timer.stop()
+	_toast.text = ""
+
+
+func _toast_msg(msg: String) -> void:
+	_toast.text = msg
+	_toast_timer.start()
+
+
+func _set_catalog_summary(text: String) -> void:
+	_catalog_summary_text = text
+	_catalog_summary.text = text
+
+
+func _set_validation(text: String, is_ok: bool, is_neutral: bool) -> void:
+	_validation.text = text
+	_validation.remove_theme_color_override("font_color")
+	if is_neutral:
+		_validation.add_theme_color_override("font_color", COLOR_NEUTRAL)
+	elif is_ok:
+		_validation.add_theme_color_override("font_color", COLOR_VALID)
+	else:
+		_validation.add_theme_color_override("font_color", COLOR_INVALID)
+
+
+func _update_save_enabled() -> void:
+	var d := _current_loadout_dict()
+	var errs := DeckRules.validate_loadout(d)
+	_save_button.disabled = (not _catalog_ready) or (not errs.is_empty())
 
 
 func _on_batch_progress(table_name: String, ok: bool, rows: Array, err_msg: String) -> void:
@@ -67,6 +132,7 @@ func _on_batch_progress(table_name: String, ok: bool, rows: Array, err_msg: Stri
 
 
 func _on_catalog_batch_finished() -> void:
+	_clear_toast()
 	_catalog_ready = true
 	var parts: PackedStringArray = PackedStringArray()
 	parts.append("cache" if SupabaseClient.used_cache_for_last_load else "network")
@@ -77,7 +143,8 @@ func _on_catalog_batch_finished() -> void:
 			n = rows.size()
 		var title: String = SupabaseClient.TABLE_LABELS.get(table, table)
 		parts.append("%s: %d" % [title, n])
-	_catalog_summary = "Catalog (%s) — %s" % [parts[0], " — ".join(parts.slice(1))]
+	_catalog_summary_text = "Catalog (%s) — %s" % [parts[0], " — ".join(parts.slice(1))]
+	_set_catalog_summary(_catalog_summary_text)
 
 	_build_chef_option()
 	_rebuild_all_cards_grid()
@@ -111,6 +178,49 @@ func _selected_tables_for_top_grid() -> Array[String]:
 	return out
 
 
+func _tooltip_for_catalog_table(table: String) -> String:
+	if table == DeckRules.CHEF_TABLE:
+		return "Sets your chef for this loadout."
+	if table == DeckRules.RESTAURANT_TABLE:
+		return "Adds to restaurant deck (need %d–%d cards)." % [DeckRules.RESTAURANT_MIN, DeckRules.RESTAURANT_MAX]
+	if DeckRules.is_main_table(table):
+		return "Adds to main deck (%d cards, max %d copies each)." % [DeckRules.MAIN_DECK_SIZE, DeckRules.MAX_COPIES_PER_CARD]
+	return "Add card"
+
+
+func _apply_tile_button_style(btn: Button) -> void:
+	btn.add_theme_stylebox_override("normal", DECK_TILE_STYLE)
+	btn.add_theme_stylebox_override("hover", _tile_style_hover)
+	btn.add_theme_stylebox_override("pressed", DECK_TILE_STYLE)
+	btn.add_theme_stylebox_override("focus", DECK_TILE_STYLE)
+
+
+func _make_catalog_tile_button(table: String, id_str: String, row: Dictionary) -> Button:
+	var btn := Button.new()
+	btn.custom_minimum_size = TILE_MIN
+	btn.clip_text = true
+	btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	btn.text = "%s\n%s" % [SupabaseClient.TABLE_LABELS.get(table, table), DeckRules.display_name_for_row(table, row)]
+	btn.tooltip_text = _tooltip_for_catalog_table(table)
+	btn.pressed.connect(_on_card_tile_pressed.bind(table, id_str))
+	_apply_tile_button_style(btn)
+	return btn
+
+
+func _make_deck_row_button(line: String, remove_tooltip: String, on_pressed: Callable) -> Button:
+	var btn := Button.new()
+	btn.custom_minimum_size = TILE_MIN
+	btn.clip_text = true
+	btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
+	btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
+	btn.text = line
+	btn.tooltip_text = remove_tooltip
+	btn.pressed.connect(on_pressed)
+	_apply_tile_button_style(btn)
+	return btn
+
+
 func _rebuild_all_cards_grid() -> void:
 	for c in _all_cards_grid.get_children():
 		c.queue_free()
@@ -134,12 +244,7 @@ func _rebuild_all_cards_grid() -> void:
 			var id_str := DeckRules.row_id(r)
 			if id_str.is_empty():
 				continue
-			var btn := Button.new()
-			btn.custom_minimum_size = Vector2(240, 64)
-			btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-			btn.text = "%s\n%s" % [SupabaseClient.TABLE_LABELS.get(table, table), DeckRules.display_name_for_row(table, r)]
-			btn.pressed.connect(_on_card_tile_pressed.bind(table, id_str))
-			_all_cards_grid.add_child(btn)
+			_all_cards_grid.add_child(_make_catalog_tile_button(table, id_str, r))
 
 
 func _on_card_tile_pressed(table: String, id_str: String) -> void:
@@ -163,7 +268,7 @@ func _try_autoload() -> void:
 		_refresh_validation_status()
 		return
 	if _load_from_disk(false):
-		_status.text = "%s\nAuto-loaded valid save from disk." % _status.text
+		_toast_msg("Auto-loaded valid save from disk.")
 
 
 func _card_label(table: String, id_str: String) -> String:
@@ -221,16 +326,11 @@ func _on_chef_item_selected(index: int) -> void:
 	_refresh_validation_status()
 
 
-func _build_main_picker_tabs() -> void:
-	# Picker is now in the top panel (AllCardsGrid) and driven by filters.
-	pass
-
-
 func _try_add_main(table: String, id_str: String) -> void:
 	if not _catalog_ready:
 		return
 	if _main_deck.size() >= DeckRules.MAIN_DECK_SIZE:
-		_bump_status("Main deck is full (30).")
+		_toast_msg("Main deck is full (30).")
 		return
 	var k := DeckRules.identity_key(table, id_str)
 	var n := 0
@@ -241,7 +341,7 @@ func _try_add_main(table: String, id_str: String) -> void:
 		if DeckRules.identity_key(str(d.get("table", "")), str(d.get("id", ""))) == k:
 			n += 1
 	if n >= DeckRules.MAX_COPIES_PER_CARD:
-		_bump_status("You can have at most %d copies of the same card." % DeckRules.MAX_COPIES_PER_CARD)
+		_toast_msg("You can have at most %d copies of the same card." % DeckRules.MAX_COPIES_PER_CARD)
 		return
 	_main_deck.append({"table": table, "id": id_str})
 	_refresh_main_deck_list()
@@ -256,42 +356,45 @@ func _remove_main_at(index: int) -> void:
 	_refresh_validation_status()
 
 
+func _refresh_main_progress() -> void:
+	var n := _main_deck.size()
+	_main_progress.max_value = float(DeckRules.MAIN_DECK_SIZE)
+	_main_progress.value = float(n)
+	var fill := StyleBoxFlat.new()
+	fill.bg_color = COLOR_VALID if n >= DeckRules.MAIN_DECK_SIZE else Color(0.28, 0.52, 0.78, 1)
+	fill.corner_radius_top_left = 3
+	fill.corner_radius_top_right = 3
+	fill.corner_radius_bottom_right = 3
+	fill.corner_radius_bottom_left = 3
+	_main_progress.add_theme_stylebox_override("fill", fill)
+
+
 func _refresh_main_deck_list() -> void:
 	for c in _main_deck_list.get_children():
 		c.queue_free()
 	_main_count.text = "%d / %d" % [_main_deck.size(), DeckRules.MAIN_DECK_SIZE]
+	_refresh_main_progress()
 	for i in range(_main_deck.size()):
 		var e: Dictionary = _main_deck[i]
 		var table := str(e.get("table", ""))
 		var id_str := str(e.get("id", ""))
 		var idx := i
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(240, 64)
-		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		btn.text = _card_label(table, id_str)
-		btn.pressed.connect(func () -> void:
+		var line := _card_label(table, id_str)
+		var btn := _make_deck_row_button(line, "Remove from main deck", func () -> void:
 			_remove_main_at(idx)
 		)
 		_main_deck_list.add_child(btn)
 
 
-func _build_restaurant_picker() -> void:
-	# Picker is now in the top panel (AllCardsGrid) and driven by filters.
-	pass
-
-
 func _bump_status(detail: String) -> void:
-	if _catalog_summary.is_empty():
-		_status.text = detail
-	else:
-		_status.text = "%s\n%s" % [_catalog_summary, detail]
+	_toast_msg(detail)
 
 
 func _try_add_restaurant(id_str: String) -> void:
 	if not _catalog_ready:
 		return
 	if _restaurant_deck.size() >= DeckRules.RESTAURANT_MAX:
-		_bump_status("Restaurant deck is full (%d)." % DeckRules.RESTAURANT_MAX)
+		_toast_msg("Restaurant deck is full (%d)." % DeckRules.RESTAURANT_MAX)
 		return
 	_restaurant_deck.append({"table": DeckRules.RESTAURANT_TABLE, "id": id_str})
 	_refresh_restaurant_deck_list()
@@ -306,20 +409,26 @@ func _remove_restaurant_at(index: int) -> void:
 	_refresh_validation_status()
 
 
+func _restaurant_count_style(n: int) -> void:
+	_rest_count.remove_theme_color_override("font_color")
+	if n >= DeckRules.RESTAURANT_MIN and n <= DeckRules.RESTAURANT_MAX:
+		_rest_count.add_theme_color_override("font_color", COLOR_VALID)
+	elif n > 0:
+		_rest_count.add_theme_color_override("font_color", COLOR_WARN)
+
+
 func _refresh_restaurant_deck_list() -> void:
 	for c in _rest_deck_list.get_children():
 		c.queue_free()
 	var n := _restaurant_deck.size()
-	_rest_count.text = "%d (need %d–%d)" % [n, DeckRules.RESTAURANT_MIN, DeckRules.RESTAURANT_MAX]
+	_rest_count.text = "%d (need %d–%d)%s" % [n, DeckRules.RESTAURANT_MIN, DeckRules.RESTAURANT_MAX, " ✓" if (n >= DeckRules.RESTAURANT_MIN and n <= DeckRules.RESTAURANT_MAX) else ""]
+	_restaurant_count_style(n)
 	for i in range(_restaurant_deck.size()):
 		var e: Dictionary = _restaurant_deck[i]
 		var id_str := str(e.get("id", ""))
 		var idx := i
-		var btn := Button.new()
-		btn.custom_minimum_size = Vector2(240, 64)
-		btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-		btn.text = _card_label(DeckRules.RESTAURANT_TABLE, id_str)
-		btn.pressed.connect(func () -> void:
+		var line := _card_label(DeckRules.RESTAURANT_TABLE, id_str)
+		var btn := _make_deck_row_button(line, "Remove from restaurant deck", func () -> void:
 			_remove_restaurant_at(idx)
 		)
 		_rest_deck_list.add_child(btn)
@@ -333,71 +442,51 @@ func _refresh_validation_status() -> void:
 	var d := _current_loadout_dict()
 	var errs := DeckRules.validate_loadout(d)
 	var line2 := "Loadout is valid." if errs.is_empty() else "Invalid: %s" % "; ".join(errs)
-	if _catalog_summary.is_empty():
-		_status.text = line2
-	else:
-		_status.text = "%s\n%s" % [_catalog_summary, line2]
+	_set_validation(line2, errs.is_empty(), false)
+	_update_save_enabled()
 
 
 func _on_save_pressed() -> void:
 	var d := _current_loadout_dict()
 	var errs := DeckRules.validate_loadout(d)
 	if not errs.is_empty():
-		if _catalog_summary.is_empty():
-			_status.text = "Cannot save — %s" % "; ".join(errs)
-		else:
-			_status.text = "%s\nCannot save — %s" % [_catalog_summary, "; ".join(errs)]
+		_set_validation("Cannot save — %s" % "; ".join(errs), false, false)
 		return
 	var text := JSON.stringify(d)
 	var path := DeckRules.LOADOUT_PATH
 	var f := FileAccess.open(path, FileAccess.WRITE)
 	if f == null:
-		if _catalog_summary.is_empty():
-			_status.text = "Could not write save file."
-		else:
-			_status.text = "%s\nCould not write save file." % _catalog_summary
+		_set_validation("Could not write save file.", false, false)
 		return
 	f.store_string(text)
 	f.close()
 	_refresh_validation_status()
-	_status.text = "%s\nSaved to %s." % [_status.text, path]
+	_toast_msg("Saved to %s." % path)
 
 
 func _load_from_disk(show_errors: bool) -> bool:
 	var path := DeckRules.LOADOUT_PATH
 	if not FileAccess.file_exists(path):
 		if show_errors:
-			if _catalog_summary.is_empty():
-				_status.text = "No save file at %s yet." % path
-			else:
-				_status.text = "%s\nNo save file at %s yet." % [_catalog_summary, path]
+			_set_validation("No save file at %s yet." % path, false, false)
 		return false
 	var f := FileAccess.open(path, FileAccess.READ)
 	if f == null:
 		if show_errors:
-			if _catalog_summary.is_empty():
-				_status.text = "Could not read save file."
-			else:
-				_status.text = "%s\nCould not read save file." % _catalog_summary
+			_set_validation("Could not read save file.", false, false)
 		return false
 	var raw := f.get_as_text()
 	f.close()
 	var parsed: Variant = DeckRules.parse_stored_json(raw)
 	if typeof(parsed) != TYPE_DICTIONARY:
 		if show_errors:
-			if _catalog_summary.is_empty():
-				_status.text = "Save file is not valid JSON."
-			else:
-				_status.text = "%s\nSave file is not valid JSON." % _catalog_summary
+			_set_validation("Save file is not valid JSON.", false, false)
 		return false
 	var root: Dictionary = parsed
 	var errs := DeckRules.validate_loadout(root)
 	if not errs.is_empty():
 		if show_errors:
-			if _catalog_summary.is_empty():
-				_status.text = "Save file invalid — %s" % "; ".join(errs)
-			else:
-				_status.text = "%s\nSave file invalid — %s" % [_catalog_summary, "; ".join(errs)]
+			_set_validation("Save file invalid — %s" % "; ".join(errs), false, false)
 		return false
 	_apply_loadout_dict(root)
 	return true
@@ -421,41 +510,41 @@ func _apply_loadout_dict(root: Dictionary) -> void:
 
 func _on_sample_deck_pressed() -> void:
 	if not _catalog_ready:
-		_bump_status("Catalog not loaded yet — wait or fix sync/config.")
+		_toast_msg("Catalog not loaded yet — wait or fix sync/config.")
 		return
 	var r: Dictionary = SampleDeckBuilder.try_build_loadout(_tables_data)
 	if not r.get("ok", false):
-		_bump_status("Sample deck: %s" % str(r.get("error", "Unknown error.")))
+		_toast_msg("Sample deck: %s" % str(r.get("error", "Unknown error.")))
 		return
 	var loadout: Variant = r.get("loadout", {})
 	if typeof(loadout) != TYPE_DICTIONARY:
-		_bump_status("Sample deck: internal error.")
+		_toast_msg("Sample deck: internal error.")
 		return
 	_apply_loadout_dict(loadout as Dictionary)
-	_status.text = "%s\nSample deck loaded — you can edit or Save." % _status.text
+	_toast_msg("Sample deck loaded — edit or Save.")
 
 
 func _on_offline_demo_pressed() -> void:
 	if not FileAccess.file_exists(BUNDLED_DEMO_LOADOUT):
-		_bump_status("Missing file: %s" % BUNDLED_DEMO_LOADOUT)
+		_toast_msg("Missing file: %s" % BUNDLED_DEMO_LOADOUT)
 		return
 	var f := FileAccess.open(BUNDLED_DEMO_LOADOUT, FileAccess.READ)
 	if f == null:
-		_bump_status("Could not read bundled offline demo.")
+		_toast_msg("Could not read bundled offline demo.")
 		return
 	var raw := f.get_as_text()
 	f.close()
 	var parsed: Variant = DeckRules.parse_stored_json(raw)
 	if typeof(parsed) != TYPE_DICTIONARY:
-		_bump_status("Bundled demo is not valid JSON.")
+		_toast_msg("Bundled demo is not valid JSON.")
 		return
 	var root: Dictionary = parsed
 	var errs := DeckRules.validate_loadout(root)
 	if not errs.is_empty():
-		_bump_status("Bundled demo invalid: %s" % "; ".join(errs))
+		_toast_msg("Bundled demo invalid: %s" % "; ".join(errs))
 		return
 	_apply_loadout_dict(root)
-	_status.text = "%s\nOffline demo loaded (bundled PROTOMBS/PROTOFNF IDs — sync catalog to see card names)." % _status.text
+	_toast_msg("Offline demo loaded (sync catalog for real names).")
 
 
 func _clone_entry_array(src: Variant) -> Array:
@@ -472,7 +561,7 @@ func _clone_entry_array(src: Variant) -> Array:
 
 func _on_load_pressed() -> void:
 	if _load_from_disk(true):
-		_status.text = "%s\nLoaded valid save from %s." % [_status.text, DeckRules.LOADOUT_PATH]
+		_toast_msg("Loaded valid save from %s." % DeckRules.LOADOUT_PATH)
 
 
 func _on_back_pressed() -> void:

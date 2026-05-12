@@ -1,6 +1,7 @@
-[gd_scene load_steps=2 format=3 uid="uid://stubdeck01"]
+[gd_scene load_steps=3 format=3 uid="uid://stubdeck01"]
 
 [ext_resource type="Script" path="res://scenes/deck_building.gd" id="1_script"]
+[ext_resource type="Theme" path="res://ui/deck_building_theme.tres" id="2_theme"]
 
 [node name="DeckBuilding" type="Control"]
 layout_mode = 3
@@ -9,6 +10,7 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme = ExtResource("2_theme")
 script = ExtResource("1_script")
 
 [node name="Margin" type="MarginContainer" parent="."]
@@ -18,10 +20,10 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 16
-theme_override_constants/margin_top = 16
-theme_override_constants/margin_right = 16
-theme_override_constants/margin_bottom = 16
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
 
 [node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
@@ -29,42 +31,78 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="TopButtons" type="GridContainer" parent="Margin/VBox"]
+[node name="Toolbar" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
-columns = 3
-theme_override_constants/h_separation = 10
-theme_override_constants/v_separation = 8
+theme_override_constants/separation = 12
 
-[node name="BackButton" type="Button" parent="Margin/VBox/TopButtons"]
+[node name="BackButton" type="Button" parent="Margin/VBox/Toolbar"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Back"
 
-[node name="SaveButton" type="Button" parent="Margin/VBox/TopButtons"]
+[node name="TitleLabel" type="Label" parent="Margin/VBox/Toolbar"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Deck building"
+horizontal_alignment = 1
+
+[node name="Actions" type="HBoxContainer" parent="Margin/VBox/Toolbar"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="SaveButton" type="Button" parent="Margin/VBox/Toolbar/Actions"]
 unique_name_in_owner = true
 layout_mode = 2
+disabled = true
 text = "Save"
 
-[node name="LoadButton" type="Button" parent="Margin/VBox/TopButtons"]
+[node name="LoadButton" type="Button" parent="Margin/VBox/Toolbar/Actions"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Load"
 
-[node name="SampleDeckButton" type="Button" parent="Margin/VBox/TopButtons"]
+[node name="SampleDeckButton" type="Button" parent="Margin/VBox/Toolbar/Actions"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Sample (catalog)"
 
-[node name="OfflineDemoButton" type="Button" parent="Margin/VBox/TopButtons"]
+[node name="OfflineDemoButton" type="Button" parent="Margin/VBox/Toolbar/Actions"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Offline demo"
 
-[node name="StatusLabel" type="Label" parent="Margin/VBox"]
+[node name="ToolbarSep" type="HSeparator" parent="Margin/VBox"]
+layout_mode = 2
+
+[node name="StatusStrip" type="VBoxContainer" parent="Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="CatalogSummaryLabel" type="Label" parent="Margin/VBox/StatusStrip"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.58, 0.64, 1)
+theme_override_font_sizes/font_size = 12
+autowrap_mode = 3
+
+[node name="ValidationLabel" type="Label" parent="Margin/VBox/StatusStrip"]
 unique_name_in_owner = true
 layout_mode = 2
 text = "…"
 autowrap_mode = 3
+
+[node name="ToastLabel" type="Label" parent="Margin/VBox/StatusStrip"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.75, 0.72, 0.55, 1)
+theme_override_font_sizes/font_size = 13
+autowrap_mode = 3
+
+[node name="ToastTimer" type="Timer" parent="Margin/VBox"]
+unique_name_in_owner = true
+wait_time = 3.5
+one_shot = true
 
 [node name="MainScroll" type="ScrollContainer" parent="Margin/VBox"]
 layout_mode = 2
@@ -80,7 +118,7 @@ theme_override_constants/separation = 0
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
-split_offset = 300
+split_offset = 360
 
 [node name="TopPanel" type="PanelContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split"]
 layout_mode = 2
@@ -88,10 +126,10 @@ size_flags_vertical = 3
 
 [node name="TopMargin" type="MarginContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
 [node name="TopVBox" type="VBoxContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin"]
 layout_mode = 2
@@ -99,43 +137,47 @@ size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 10
 
-[node name="FilterRow" type="GridContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox"]
+[node name="CatalogHeader" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox"]
 layout_mode = 2
-columns = 3
-theme_override_constants/h_separation = 8
+theme_override_font_sizes/font_size = 18
+text = "Catalog"
+
+[node name="FilterFlow" type="FlowContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox"]
+layout_mode = 2
+theme_override_constants/h_separation = 10
 theme_override_constants/v_separation = 6
 
-[node name="ShowStaff" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+[node name="ShowStaff" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterFlow"]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 text = "Staff"
 
-[node name="ShowMeal" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+[node name="ShowMeal" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterFlow"]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 text = "Meal"
 
-[node name="ShowEvent" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+[node name="ShowEvent" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterFlow"]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 text = "Event"
 
-[node name="ShowSupport" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+[node name="ShowSupport" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterFlow"]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = true
 text = "Support"
 
-[node name="ShowRestaurant" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+[node name="ShowRestaurant" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterFlow"]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = false
 text = "Restaurant"
 
-[node name="ShowChef" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+[node name="ShowChef" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterFlow"]
 unique_name_in_owner = true
 layout_mode = 2
 button_pressed = false
@@ -143,11 +185,14 @@ text = "Chef"
 
 [node name="TopHint" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox"]
 layout_mode = 2
-text = "Click a card to add it to the appropriate deck (Chef sets your chef)."
+theme_override_colors/font_color = Color(0.65, 0.67, 0.72, 1)
+theme_override_font_sizes/font_size = 12
+text = "Click a card to add it to the correct deck; chef picks set your chef."
 autowrap_mode = 3
 
 [node name="AllCardsScroll" type="ScrollContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox"]
 layout_mode = 2
+custom_minimum_size = Vector2(0, 220)
 size_flags_vertical = 3
 
 [node name="AllCardsGrid" type="GridContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/AllCardsScroll"]
@@ -164,10 +209,10 @@ size_flags_vertical = 3
 
 [node name="BottomMargin" type="MarginContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel"]
 layout_mode = 2
-theme_override_constants/margin_left = 10
-theme_override_constants/margin_top = 10
-theme_override_constants/margin_right = 10
-theme_override_constants/margin_bottom = 10
+theme_override_constants/margin_left = 12
+theme_override_constants/margin_top = 12
+theme_override_constants/margin_right = 12
+theme_override_constants/margin_bottom = 12
 
 [node name="BottomVBox" type="VBoxContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin"]
 layout_mode = 2
@@ -178,7 +223,9 @@ theme_override_constants/separation = 10
 [node name="DeckHelp" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox"]
 unique_name_in_owner = true
 layout_mode = 2
-text = "Top: click cards to add. Bottom: click cards in your deck to remove. Use filters to focus what you’re picking."
+theme_override_colors/font_color = Color(0.65, 0.67, 0.72, 1)
+theme_override_font_sizes/font_size = 12
+text = "Your deck: click a slot to remove. Use filters to narrow the catalog."
 autowrap_mode = 3
 
 [node name="ChefSection" type="HBoxContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox"]
@@ -209,9 +256,15 @@ unique_name_in_owner = true
 layout_mode = 2
 text = "0 / 30"
 
+[node name="MainProgress" type="ProgressBar" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/MainSection"]
+unique_name_in_owner = true
+layout_mode = 2
+max_value = 30.0
+show_percentage = false
+
 [node name="MainDeckScroll" type="ScrollContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/MainSection"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 120)
+custom_minimum_size = Vector2(0, 140)
 size_flags_vertical = 3
 
 [node name="MainDeckList" type="GridContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/MainSection/MainDeckScroll"]
@@ -238,7 +291,7 @@ text = "0 (need 3–10)"
 
 [node name="RestaurantDeckScroll" type="ScrollContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/RestaurantSection"]
 layout_mode = 2
-custom_minimum_size = Vector2(0, 100)
+custom_minimum_size = Vector2(0, 120)
 size_flags_vertical = 3
 
 [node name="RestaurantDeckList" type="GridContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/RestaurantSection/RestaurantDeckScroll"]
