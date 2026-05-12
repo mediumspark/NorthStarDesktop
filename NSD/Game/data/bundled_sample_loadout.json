@@ -1,0 +1,44 @@
+{
+  "version": 1,
+  "chef": {
+    "table": "chef_cards",
+    "id": "PROTOMBSCHEF001"
+  },
+  "restaurant_deck": [
+    {"table": "restaurant_cards", "id": "PROTOMBSREST010"},
+    {"table": "restaurant_cards", "id": "PROTOMBSREST011"},
+    {"table": "restaurant_cards", "id": "PROTOMBSREST014"}
+  ],
+  "main_deck": [
+    {"table": "staff_cards", "id": "PROTOMBSSTAF045"},
+    {"table": "staff_cards", "id": "PROTOMBSSTAF045"},
+    {"table": "staff_cards", "id": "PROTOMBSSTAF045"},
+    {"table": "staff_cards", "id": "PROTOMBSSTAF051"},
+    {"table": "staff_cards", "id": "PROTOMBSSTAF051"},
+    {"table": "staff_cards", "id": "PROTOMBSSTAF051"},
+    {"table": "staff_cards", "id": "PROTOMBSSTAF049"},
+    {"table": "staff_cards", "id": "PROTOMBSSTAF049"},
+    {"table": "staff_cards", "id": "PROTOMBSSTAF049"},
+    {"table": "meal_cards", "id": "PROTOMBSMEAL034"},
+    {"table": "meal_cards", "id": "PROTOMBSMEAL034"},
+    {"table": "meal_cards", "id": "PROTOMBSMEAL034"},
+    {"table": "meal_cards", "id": "PROTOMBSMEAL038"},
+    {"table": "meal_cards", "id": "PROTOMBSMEAL038"},
+    {"table": "meal_cards", "id": "PROTOMBSMEAL038"},
+    {"table": "meal_cards", "id": "PROTOFNFMEAL070"},
+    {"table": "meal_cards", "id": "PROTOFNFMEAL070"},
+    {"table": "meal_cards", "id": "PROTOFNFMEAL070"},
+    {"table": "event_cards", "id": "PROTOMBSEVEN055"},
+    {"table": "event_cards", "id": "PROTOMBSEVEN055"},
+    {"table": "event_cards", "id": "PROTOMBSEVEN055"},
+    {"table": "event_cards", "id": "PROTOFNFEVEN080"},
+    {"table": "event_cards", "id": "PROTOFNFEVEN080"},
+    {"table": "event_cards", "id": "PROTOFNFEVEN080"},
+    {"table": "event_cards", "id": "PROTOFNFEVEN081"},
+    {"table": "event_cards", "id": "PROTOFNFEVEN081"},
+    {"table": "event_cards", "id": "PROTOFNFEVEN081"},
+    {"table": "support_cards", "id": "PROTOMBSSUPP059"},
+    {"table": "support_cards", "id": "PROTOMBSSUPP059"},
+    {"table": "support_cards", "id": "PROTOMBSSUPP059"}
+  ]
+}

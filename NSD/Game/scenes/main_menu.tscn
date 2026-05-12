@@ -1,0 +1,91 @@
+[gd_scene format=3 uid="uid://bnn6c6agkjtmf"]
+
+[ext_resource type="Script" uid="uid://cb72kefr27t0r" path="res://scenes/main_menu.gd" id="1_script"]
+[ext_resource type="AudioStream" uid="uid://cc8rdonogxfru" path="res://music/intro.mp3" id="2_ekxnf"]
+
+[node name="MainMenu" type="Control" unique_id=40932132]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="IntroMusic" type="AudioStreamPlayer" parent="." unique_id=411348558]
+unique_name_in_owner = true
+stream = ExtResource("2_ekxnf")
+volume_db = -8.0
+autoplay = true
+parameters/looping = true
+
+[node name="Margin" type="MarginContainer" parent="." unique_id=796185846]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Center" type="CenterContainer" parent="Margin" unique_id=1412693408]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="Margin/Center" unique_id=1389218912]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="Title" type="Label" parent="Margin/Center/VBox" unique_id=677625746]
+layout_mode = 2
+theme_override_font_sizes/font_size = 28
+text = "North Star"
+horizontal_alignment = 1
+
+[node name="CatalogButton" type="Button" parent="Margin/Center/VBox" unique_id=1855577356]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "Catalog"
+
+[node name="DeckBuildingButton" type="Button" parent="Margin/Center/VBox" unique_id=664607957]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "Deck building"
+
+[node name="CpuMatchesButton" type="Button" parent="Margin/Center/VBox" unique_id=855639589]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "CPU matches"
+
+[node name="PvpMatchesButton" type="Button" parent="Margin/Center/VBox" unique_id=1946247390]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "PVP matches"
+
+[node name="TopBar" type="Control" parent="." unique_id=1051031993]
+layout_mode = 1
+anchors_preset = 0
+offset_left = 12.0
+offset_top = 10.0
+offset_right = 60.0
+offset_bottom = 58.0
+grow_horizontal = 0
+grow_vertical = 0
+
+[node name="AccountButton" type="TextureButton" parent="TopBar" unique_id=1029243091]
+unique_name_in_owner = true
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+stretch_mode = 5

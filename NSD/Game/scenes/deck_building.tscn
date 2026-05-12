@@ -1,0 +1,250 @@
+[gd_scene load_steps=2 format=3 uid="uid://stubdeck01"]
+
+[ext_resource type="Script" path="res://scenes/deck_building.gd" id="1_script"]
+
+[node name="DeckBuilding" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 16
+theme_override_constants/margin_top = 16
+theme_override_constants/margin_right = 16
+theme_override_constants/margin_bottom = 16
+
+[node name="VBox" type="VBoxContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="TopButtons" type="GridContainer" parent="Margin/VBox"]
+layout_mode = 2
+columns = 3
+theme_override_constants/h_separation = 10
+theme_override_constants/v_separation = 8
+
+[node name="BackButton" type="Button" parent="Margin/VBox/TopButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Back"
+
+[node name="SaveButton" type="Button" parent="Margin/VBox/TopButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Save"
+
+[node name="LoadButton" type="Button" parent="Margin/VBox/TopButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Load"
+
+[node name="SampleDeckButton" type="Button" parent="Margin/VBox/TopButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Sample (catalog)"
+
+[node name="OfflineDemoButton" type="Button" parent="Margin/VBox/TopButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Offline demo"
+
+[node name="StatusLabel" type="Label" parent="Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "…"
+autowrap_mode = 3
+
+[node name="MainScroll" type="ScrollContainer" parent="Margin/VBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="ScrollContent" type="VBoxContainer" parent="Margin/VBox/MainScroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 0
+
+[node name="Split" type="VSplitContainer" parent="Margin/VBox/MainScroll/ScrollContent"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+split_offset = 300
+
+[node name="TopPanel" type="PanelContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="TopMargin" type="MarginContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="TopVBox" type="VBoxContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="FilterRow" type="GridContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox"]
+layout_mode = 2
+columns = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 6
+
+[node name="ShowStaff" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Staff"
+
+[node name="ShowMeal" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Meal"
+
+[node name="ShowEvent" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Event"
+
+[node name="ShowSupport" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = true
+text = "Support"
+
+[node name="ShowRestaurant" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = false
+text = "Restaurant"
+
+[node name="ShowChef" type="CheckButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/FilterRow"]
+unique_name_in_owner = true
+layout_mode = 2
+button_pressed = false
+text = "Chef"
+
+[node name="TopHint" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox"]
+layout_mode = 2
+text = "Click a card to add it to the appropriate deck (Chef sets your chef)."
+autowrap_mode = 3
+
+[node name="AllCardsScroll" type="ScrollContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="AllCardsGrid" type="GridContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/TopPanel/TopMargin/TopVBox/AllCardsScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 3
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="BottomPanel" type="PanelContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split"]
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="BottomMargin" type="MarginContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 10
+theme_override_constants/margin_top = 10
+theme_override_constants/margin_right = 10
+theme_override_constants/margin_bottom = 10
+
+[node name="BottomVBox" type="VBoxContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+theme_override_constants/separation = 10
+
+[node name="DeckHelp" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Top: click cards to add. Bottom: click cards in your deck to remove. Use filters to focus what you’re picking."
+autowrap_mode = 3
+
+[node name="ChefSection" type="HBoxContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="ChefTitle" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/ChefSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Chef"
+
+[node name="ChefOption" type="OptionButton" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/ChefSection"]
+unique_name_in_owner = true
+layout_mode = 2
+custom_minimum_size = Vector2(320, 0)
+
+[node name="MainSection" type="VBoxContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="MainTitle" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/MainSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Main deck"
+
+[node name="MainCountLabel" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/MainSection"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0 / 30"
+
+[node name="MainDeckScroll" type="ScrollContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/MainSection"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 120)
+size_flags_vertical = 3
+
+[node name="MainDeckList" type="GridContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/MainSection/MainDeckScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="RestaurantSection" type="VBoxContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox"]
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="RestaurantTitle" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/RestaurantSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 18
+text = "Restaurant deck"
+
+[node name="RestaurantCountLabel" type="Label" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/RestaurantSection"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "0 (need 3–10)"
+
+[node name="RestaurantDeckScroll" type="ScrollContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/RestaurantSection"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 100)
+size_flags_vertical = 3
+
+[node name="RestaurantDeckList" type="GridContainer" parent="Margin/VBox/MainScroll/ScrollContent/Split/BottomPanel/BottomMargin/BottomVBox/RestaurantSection/RestaurantDeckScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+columns = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8

@@ -1,0 +1,149 @@
+[gd_scene format=3 load_steps=1]
+
+[ext_resource type="Script" path="res://scenes/account_settings.gd" id="1_script"]
+
+[node name="AccountSettings" type="Control"]
+layout_mode = 3
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+script = ExtResource("1_script")
+
+[node name="Margin" type="MarginContainer" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 24
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 24
+
+[node name="Scroll" type="ScrollContainer" parent="Margin"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
+
+[node name="VBox" type="VBoxContainer" parent="Margin/Scroll"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_constants/separation = 14
+
+[node name="TopRow" type="HBoxContainer" parent="Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+
+[node name="BackButton" type="Button" parent="Margin/Scroll/VBox/TopRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Back"
+
+[node name="Title" type="Label" parent="Margin/Scroll/VBox/TopRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_font_sizes/font_size = 22
+text = "Account"
+
+[node name="RecoveryTitle" type="Label" parent="Margin/Scroll/VBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Password recovery"
+
+[node name="RecoveryHint" type="Label" parent="Margin/Scroll/VBox"]
+layout_mode = 2
+autowrap_mode = 2
+text = "Enter your email. If an account exists, Supabase will send a reset link (configure redirect URL in Supabase Auth settings)."
+
+[node name="RecoveryEmail" type="LineEdit" parent="Margin/Scroll/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Email for reset link"
+
+[node name="RecoveryButton" type="Button" parent="Margin/Scroll/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Send reset link"
+
+[node name="RecoveryStatus" type="Label" parent="Margin/Scroll/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="Sep1" type="HSeparator" parent="Margin/Scroll/VBox"]
+layout_mode = 2
+
+[node name="ProfileSection" type="VBoxContainer" parent="Margin/Scroll/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="ProfileTitle" type="Label" parent="Margin/Scroll/VBox/ProfileSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Profile"
+
+[node name="EmailReadout" type="Label" parent="Margin/Scroll/VBox/ProfileSection"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+text = "Email: —"
+
+[node name="DisplayNameEdit" type="LineEdit" parent="Margin/Scroll/VBox/ProfileSection"]
+unique_name_in_owner = true
+layout_mode = 2
+placeholder_text = "Display name"
+
+[node name="SaveProfileButton" type="Button" parent="Margin/Scroll/VBox/ProfileSection"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Save display name"
+
+[node name="ProfileStatus" type="Label" parent="Margin/Scroll/VBox/ProfileSection"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
+
+[node name="Sep2" type="HSeparator" parent="Margin/Scroll/VBox/ProfileSection"]
+layout_mode = 2
+
+[node name="PasswordSection" type="VBoxContainer" parent="Margin/Scroll/VBox/ProfileSection"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PasswordTitle" type="Label" parent="Margin/Scroll/VBox/ProfileSection/PasswordSection"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+text = "Change password"
+
+[node name="CurrentPassword" type="LineEdit" parent="Margin/Scroll/VBox/ProfileSection/PasswordSection"]
+unique_name_in_owner = true
+layout_mode = 2
+secret = true
+placeholder_text = "Current password"
+
+[node name="NewPassword" type="LineEdit" parent="Margin/Scroll/VBox/ProfileSection/PasswordSection"]
+unique_name_in_owner = true
+layout_mode = 2
+secret = true
+placeholder_text = "New password (min 8 characters)"
+
+[node name="ConfirmPassword" type="LineEdit" parent="Margin/Scroll/VBox/ProfileSection/PasswordSection"]
+unique_name_in_owner = true
+layout_mode = 2
+secret = true
+placeholder_text = "Confirm new password"
+
+[node name="ChangePasswordButton" type="Button" parent="Margin/Scroll/VBox/ProfileSection/PasswordSection"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Update password"
+
+[node name="PasswordStatus" type="Label" parent="Margin/Scroll/VBox/ProfileSection/PasswordSection"]
+unique_name_in_owner = true
+layout_mode = 2
+autowrap_mode = 2
