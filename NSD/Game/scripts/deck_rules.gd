@@ -51,21 +51,31 @@ static func row_id(row: Dictionary) -> String:
 ## Human-readable label for catalog/deck UI. Chef rows prefer chef_name when set.
 static func display_name_for_row(table_name: String, row: Dictionary) -> String:
 	if table_name == CHEF_TABLE:
-		var vchef: Variant = row.get("chef_name", row.get("ChefName", null))
-		if vchef != null:
-			var sc := str(vchef).strip_edges()
+		for ck in ["chef_name", "ChefName", "name", "Name"]:
+			if not row.has(ck):
+				continue
+			var sc := str(row[ck]).strip_edges()
 			if not sc.is_empty():
 				return sc
-	var raw: Variant = row.get("name", row.get("Name", null))
-	var s := ""
-	if raw != null:
-		s = str(raw).strip_edges()
-	if s.is_empty():
-		var id_str := row_id(row)
-		if not id_str.is_empty():
-			return "(unnamed) [%s]" % id_str
-		return "(unnamed)"
-	return s
+	for nk in [
+		"name",
+		"Name",
+		"card_name",
+		"CardName",
+		"display_name",
+		"DisplayName",
+		"title",
+		"Title",
+	]:
+		if not row.has(nk):
+			continue
+		var s := str(row[nk]).strip_edges()
+		if not s.is_empty():
+			return s
+	var id_str := row_id(row)
+	if not id_str.is_empty():
+		return "(unnamed) [%s]" % id_str
+	return "(unnamed)"
 
 
 static func identity_key(table: String, id: String) -> String:

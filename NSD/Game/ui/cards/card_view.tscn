@@ -1,0 +1,124 @@
+[gd_scene load_steps=3 format=3 uid="uid://cardview01"]
+
+[ext_resource type="Script" path="res://ui/cards/card_view.gd" id="1_cv"]
+[ext_resource type="Texture2D" path="res://ui/cards/templates/card_staff.svg" id="2_tex"]
+
+[node name="CardView" type="Control"]
+custom_minimum_size = Vector2(132, 218)
+layout_mode = 3
+anchors_preset = 0
+clip_contents = true
+script = ExtResource("1_cv")
+
+[node name="Inner" type="Control" parent="."]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(375, 525)
+layout_mode = 0
+offset_right = 375.0
+offset_bottom = 525.0
+
+[node name="Background" type="TextureRect" parent="Inner"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_right = 375.0
+offset_bottom = 525.0
+mouse_filter = 2
+texture = ExtResource("2_tex")
+expand_mode = 1
+stretch_mode = 5
+
+[node name="CostBadge" type="Label" parent="Inner"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 22.0
+offset_top = 22.0
+offset_right = 82.0
+offset_bottom = 82.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 28
+text = "2"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="FoodRatingBadge" type="Label" parent="Inner"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 293.0
+offset_top = 22.0
+offset_right = 353.0
+offset_bottom = 82.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 28
+text = "3"
+horizontal_alignment = 1
+vertical_alignment = 1
+
+[node name="StarRow" type="HBoxContainer" parent="Inner"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 258.0
+offset_top = 26.0
+offset_right = 354.0
+offset_bottom = 58.0
+alignment = 2
+
+[node name="TypeBanner" type="Label" parent="Inner"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 0
+offset_left = 118.0
+offset_top = 302.0
+offset_right = 258.0
+offset_bottom = 338.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+text = "DINER"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+
+[node name="NameLabel" type="Label" parent="Inner"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 48.0
+offset_top = 292.0
+offset_right = 327.0
+offset_bottom = 330.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 16
+text = "Card Name"
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 2
+max_lines_visible = 2
+
+[node name="EffectLabel" type="Label" parent="Inner"]
+unique_name_in_owner = true
+layout_mode = 0
+offset_left = 24.0
+offset_top = 358.0
+offset_right = 351.0
+offset_bottom = 498.0
+theme_override_colors/font_color = Color(0, 0, 0, 1)
+theme_override_font_sizes/font_size = 11
+text = "Effect text goes here."
+horizontal_alignment = 1
+vertical_alignment = 1
+autowrap_mode = 3
+max_lines_visible = 6
+
+[node name="ExtraBanner" type="Label" parent="."]
+unique_name_in_owner = true
+visible = false
+layout_mode = 1
+anchors_preset = 10
+anchor_right = 1.0
+offset_top = -18.0
+offset_bottom = -2.0
+grow_horizontal = 2
+theme_override_colors/font_color = Color(0.65, 0.78, 1, 1)
+theme_override_font_sizes/font_size = 9
+text = "TOP OF DECK"
+horizontal_alignment = 1

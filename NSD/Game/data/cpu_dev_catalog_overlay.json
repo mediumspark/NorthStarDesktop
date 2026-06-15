@@ -1,0 +1,48 @@
+{
+  "chef_cards": [
+    {
+      "code": "PROTOMBSCHEF001",
+      "chef_name": "Dev Chef",
+      "base_influence": 6,
+      "allowed_restaurant_r_types": ["diner", "sit_down", "fast_casual", "mobile"]
+    }
+  ],
+  "restaurant_cards": [
+    {
+      "code": "PROTOMBSREST010",
+      "name": "Mama June's",
+      "r_type": "diner",
+      "base_rating": 2
+    },
+    {
+      "code": "PROTOMBSREST011",
+      "name": "Caffine Queen",
+      "r_type": "diner",
+      "base_rating": 2
+    },
+    {
+      "code": "PROTOMBSREST014",
+      "name": "Mork's BBQ",
+      "r_type": "diner",
+      "base_rating": 3
+    }
+  ],
+  "staff_cards": [
+    {"code": "PROTOMBSSTAF045", "name": "Dev Staff 045", "r_type": "diner", "influence_cost": 1},
+    {"code": "PROTOMBSSTAF051", "name": "Dev Staff 051", "r_type": "diner", "influence_cost": 1},
+    {"code": "PROTOMBSSTAF049", "name": "Dev Staff 049", "r_type": "diner", "influence_cost": 1}
+  ],
+  "meal_cards": [
+    {"code": "PROTOMBSMEAL034", "name": "Dev Meal 034", "r_type": "diner", "food_rating": 1},
+    {"code": "PROTOMBSMEAL038", "name": "Dev Meal 038", "r_type": "diner", "food_rating": 1},
+    {"code": "PROTOFNFMEAL070", "name": "Dev Meal 070", "r_type": "NONE", "food_rating": 1}
+  ],
+  "event_cards": [
+    {"code": "PROTOMBSEVEN055", "name": "Dev Event 055", "r_type": "diner", "influence_cost": 1},
+    {"code": "PROTOFNFEVEN080", "name": "Dev Event 080", "r_type": "diner", "influence_cost": 1},
+    {"code": "PROTOFNFEVEN081", "name": "Dev Event 081", "r_type": "diner", "influence_cost": 1}
+  ],
+  "support_cards": [
+    {"code": "PROTOMBSSUPP059", "name": "Dev Support 059", "r_type": "diner", "influence_cost": 1}
+  ]
+}

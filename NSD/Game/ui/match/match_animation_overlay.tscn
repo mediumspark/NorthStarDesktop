@@ -1,0 +1,101 @@
+[gd_scene load_steps=3 format=3 uid="uid://matchanimoverlay01"]
+
+[ext_resource type="Script" path="res://ui/match/match_animation_overlay.gd" id="1_script"]
+[ext_resource type="StyleBoxFlat" path="res://ui/deck_tile_style.tres" id="2_style"]
+
+[node name="MatchAnimationOverlay" type="CanvasLayer"]
+layer = 90
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.025, 0.04, 0.78)
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = 8
+anchor_left = 0.5
+anchor_top = 0.5
+anchor_right = 0.5
+anchor_bottom = 0.5
+offset_left = -220.0
+offset_top = -160.0
+offset_right = 220.0
+offset_bottom = 160.0
+grow_horizontal = 2
+grow_vertical = 2
+theme_override_styles/panel = ExtResource("2_style")
+
+[node name="Margin" type="MarginContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="Panel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+alignment = 1
+
+[node name="TitleLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.78, 0.28, 1)
+theme_override_font_sizes/font_size = 36
+text = "FACE OFF"
+horizontal_alignment = 1
+
+[node name="SubtitleLabel" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.72, 0.75, 0.82, 1)
+theme_override_font_sizes/font_size = 15
+text = "Revealing…"
+horizontal_alignment = 1
+
+[node name="ScoreRow" type="HBoxContainer" parent="Panel/Margin/VBox"]
+layout_mode = 2
+theme_override_constants/separation = 16
+alignment = 1
+
+[node name="YouScoreLabel" type="Label" parent="Panel/Margin/VBox/ScoreRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.45, 0.78, 1, 1)
+theme_override_font_sizes/font_size = 22
+text = "You: —"
+horizontal_alignment = 2
+
+[node name="VsLabel" type="Label" parent="Panel/Margin/VBox/ScoreRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.55, 0.58, 0.65, 1)
+theme_override_font_sizes/font_size = 18
+text = "vs"
+vertical_alignment = 1
+
+[node name="CpuScoreLabel" type="Label" parent="Panel/Margin/VBox/ScoreRow"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(1, 0.55, 0.45, 1)
+theme_override_font_sizes/font_size = 22
+text = "CPU: —"
+horizontal_alignment = 0
+
+[node name="ResultBanner" type="Label" parent="Panel/Margin/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(0.88, 0.9, 0.95, 1)
+theme_override_font_sizes/font_size = 18
+horizontal_alignment = 1
+autowrap_mode = 3

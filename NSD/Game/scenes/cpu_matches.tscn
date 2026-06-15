@@ -1,6 +1,25 @@
-[gd_scene format=3 uid="uid://stubcpu01"]
+[gd_scene load_steps=6 format=3 uid="uid://stubcpu01"]
 
-[ext_resource type="Script" path="res://scenes/stub_screen.gd" id="1_script"]
+[ext_resource type="Script" path="res://scenes/cpu_matches.gd" id="1_cpu"]
+[ext_resource type="Theme" path="res://ui/deck_building_theme.tres" id="2_theme"]
+[ext_resource type="StyleBoxFlat" path="res://ui/deck_tile_style.tres" id="3_tile"]
+[ext_resource type="AudioStream" path="res://music/battle_1.mp3" id="4_battle"]
+
+[sub_resource type="StyleBoxFlat" id="StyleBoxFlat_human"]
+bg_color = Color(0.08, 0.085, 0.11, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.38, 0.55, 0.82, 0.85)
+corner_radius_top_left = 8
+corner_radius_top_right = 8
+corner_radius_bottom_right = 8
+corner_radius_bottom_left = 8
+content_margin_left = 12
+content_margin_top = 10
+content_margin_right = 12
+content_margin_bottom = 10
 
 [node name="CpuMatches" type="Control"]
 layout_mode = 3
@@ -9,7 +28,24 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-script = ExtResource("1_script")
+theme = ExtResource("2_theme")
+script = ExtResource("1_cpu")
+
+[node name="BattleMusic" type="AudioStreamPlayer" parent="."]
+unique_name_in_owner = true
+stream = ExtResource("4_battle")
+volume_db = -8.0
+parameters/looping = true
+
+[node name="Background" type="ColorRect" parent="."]
+layout_mode = 1
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+color = Color(0.055, 0.06, 0.075, 1)
 
 [node name="Margin" type="MarginContainer" parent="."]
 layout_mode = 1
@@ -18,34 +54,348 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
-theme_override_constants/margin_left = 24
-theme_override_constants/margin_top = 24
-theme_override_constants/margin_right = 24
-theme_override_constants/margin_bottom = 24
+theme_override_constants/margin_left = 20
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 20
+theme_override_constants/margin_bottom = 20
 
-[node name="Center" type="CenterContainer" parent="Margin"]
+[node name="VBox" type="VBoxContainer" parent="Margin"]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_constants/separation = 10
 
-[node name="VBox" type="VBoxContainer" parent="Margin/Center"]
+[node name="TopBar" type="HBoxContainer" parent="Margin/VBox"]
 layout_mode = 2
-theme_override_constants/separation = 16
+theme_override_constants/separation = 12
 
-[node name="TitleLabel" type="Label" parent="Margin/Center/VBox"]
+[node name="BackButton" type="Button" parent="Margin/VBox/TopBar"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Main menu"
+
+[node name="PhaseBadge" type="Label" parent="Margin/VBox/TopBar"]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 22
-text = "CPU matches"
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+text = "…"
 
-[node name="Subtitle" type="Label" parent="Margin/Center/VBox"]
-layout_mode = 2
-text = "Coming soon."
-horizontal_alignment = 1
-
-[node name="BackButton" type="Button" parent="Margin/Center/VBox"]
+[node name="RoundLabel" type="Label" parent="Margin/VBox/TopBar"]
 unique_name_in_owner = true
-custom_minimum_size = Vector2(200, 0)
 layout_mode = 2
-text = "Back"
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.6, 0.63, 0.72, 1)
+text = ""
+
+[node name="TopSpacer" type="Control" parent="Margin/VBox/TopBar"]
+layout_mode = 2
+size_flags_horizontal = 3
+
+[node name="StatusLabel" type="Label" parent="Margin/VBox/TopBar"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+autowrap_mode = 3
+horizontal_alignment = 2
+text = "…"
+
+[node name="ErrorLabel" type="Label" parent="Margin/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_colors/font_color = Color(1, 0.45, 0.45, 1)
+autowrap_mode = 3
+
+[node name="StarsRow" type="HBoxContainer" parent="Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 24
+alignment = 1
+
+[node name="YouStarsTrack" type="HBoxContainer" parent="Margin/VBox/StarsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="StarsVs" type="Label" parent="Margin/VBox/StarsRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 12
+theme_override_colors/font_color = Color(0.5, 0.53, 0.6, 1)
+text = "vs"
+vertical_alignment = 1
+
+[node name="CpuStarsTrack" type="HBoxContainer" parent="Margin/VBox/StarsRow"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="StatusBanner" type="Label" parent="Margin/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 14
+theme_override_colors/font_color = Color(0.88, 0.92, 0.55, 1)
+horizontal_alignment = 1
+autowrap_mode = 3
+text = ""
+
+[node name="EndedLabel" type="Label" parent="Margin/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.85, 0.9, 0.55, 1)
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="GamePanel" type="PanelContainer" parent="Margin/VBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_styles/panel = ExtResource("3_tile")
+
+[node name="GameVBox" type="VBoxContainer" parent="Margin/VBox/GamePanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="ActiveRestaurantsPanel" type="HBoxContainer" parent="Margin/VBox/GamePanel/GameVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 28
+
+[node name="CpuRestaurantCol" type="VBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/ActiveRestaurantsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="CpuRestaurantCaption" type="Label" parent="Margin/VBox/GamePanel/GameVBox/ActiveRestaurantsPanel/CpuRestaurantCol"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.75, 0.78, 0.85, 1)
+horizontal_alignment = 1
+text = "CPU restaurant"
+
+[node name="CpuRestaurantRow" type="HBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/ActiveRestaurantsPanel/CpuRestaurantCol"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="ActiveRestaurantsVs" type="Label" parent="Margin/VBox/GamePanel/GameVBox/ActiveRestaurantsPanel"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.55, 0.58, 0.65, 1)
+text = "vs"
+vertical_alignment = 1
+
+[node name="HumanRestaurantCol" type="VBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/ActiveRestaurantsPanel"]
+layout_mode = 2
+theme_override_constants/separation = 4
+alignment = 1
+
+[node name="HumanRestaurantCaption" type="Label" parent="Margin/VBox/GamePanel/GameVBox/ActiveRestaurantsPanel/HumanRestaurantCol"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.75, 0.78, 0.85, 1)
+horizontal_alignment = 1
+text = "Your restaurant"
+
+[node name="HumanRestaurantRow" type="HBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/ActiveRestaurantsPanel/HumanRestaurantCol"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+
+[node name="StepTitle" type="Label" parent="Margin/VBox/GamePanel/GameVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 20
+text = "Phase"
+
+[node name="PickPanel" type="VBoxContainer" parent="Margin/VBox/GamePanel/GameVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PickRestaurantRow" type="HBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/PickPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+alignment = 1
+theme_override_constants/separation = 20
+
+[node name="MulliganPanel" type="VBoxContainer" parent="Margin/VBox/GamePanel/GameVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="MulliganHint" type="Label" parent="Margin/VBox/GamePanel/GameVBox/MulliganPanel"]
+layout_mode = 2
+text = "You may mulligan once: all five cards go back, shuffle, redraw five. CPU will keep."
+autowrap_mode = 3
+
+[node name="MulliganHandRow" type="HFlowContainer" parent="Margin/VBox/GamePanel/GameVBox/MulliganPanel"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="MulliganRow" type="HBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/MulliganPanel"]
+layout_mode = 2
+theme_override_constants/separation = 12
+
+[node name="MulliganYesButton" type="Button" parent="Margin/VBox/GamePanel/GameVBox/MulliganPanel/MulliganRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Mulligan (all 5)"
+
+[node name="MulliganNoButton" type="Button" parent="Margin/VBox/GamePanel/GameVBox/MulliganPanel/MulliganRow"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Keep hand"
+
+[node name="SetupPanel" type="VBoxContainer" parent="Margin/VBox/GamePanel/GameVBox"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="SetupBoardRow" type="HBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel"]
+layout_mode = 2
+size_flags_vertical = 3
+theme_override_constants/separation = 12
+
+[node name="CpuBoardPanel" type="PanelContainer" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+theme_override_styles/panel = ExtResource("3_tile")
+
+[node name="CpuBoardVBox" type="VBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/CpuBoardPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="CpuBoardTitle" type="Label" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/CpuBoardPanel/CpuBoardVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.75, 0.78, 0.85, 1)
+text = "CPU"
+
+[node name="CpuInfluenceLabel" type="Label" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/CpuBoardPanel/CpuBoardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "CPU influence: 0 / 0"
+
+[node name="CpuLineTitle" type="Label" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/CpuBoardPanel/CpuBoardVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.65, 0.68, 0.75, 1)
+text = "Line (face-down)"
+
+[node name="CpuLineRow" type="HBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/CpuBoardPanel/CpuBoardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="BoardDivider" type="Label" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 16
+theme_override_colors/font_color = Color(0.5, 0.53, 0.6, 1)
+text = "vs"
+vertical_alignment = 1
+
+[node name="HumanBoardPanel" type="PanelContainer" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow"]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_stretch_ratio = 1.0
+theme_override_styles/panel = SubResource("StyleBoxFlat_human")
+
+[node name="HumanBoardVBox" type="VBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="HumanBoardTitle" type="Label" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 13
+theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+text = "You"
+
+[node name="InfluenceLabel" type="Label" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Your influence: 0 / 0"
+
+[node name="YourLineTitle" type="Label" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox"]
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+theme_override_colors/font_color = Color(0.65, 0.68, 0.75, 1)
+text = "Your line (reveals left → right)"
+
+[node name="HumanLineRow" type="HBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 6
+
+[node name="HandHint" type="Label" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 11
+text = "Hand — tap a card to add it to your line (Staff, Meal, Event). Support is not set face-down in v1."
+autowrap_mode = 3
+
+[node name="HandRow" type="HFlowContainer" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_vertical = 0
+theme_override_constants/h_separation = 8
+theme_override_constants/v_separation = 8
+
+[node name="SetupButtons" type="HBoxContainer" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="RemoveLastButton" type="Button" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox/SetupButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Remove last set card"
+
+[node name="LockSetupButton" type="Button" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox/SetupButtons"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Lock line (CPU sets)"
+
+[node name="RevealFaceoffButton" type="Button" parent="Margin/VBox/GamePanel/GameVBox/SetupPanel/SetupBoardRow/HumanBoardPanel/HumanBoardVBox/SetupButtons"]
+unique_name_in_owner = true
+visible = false
+layout_mode = 2
+text = "Reveal Faceoff"
+
+[node name="LogSection" type="VBoxContainer" parent="Margin/VBox/GamePanel/GameVBox"]
+layout_mode = 2
+theme_override_constants/separation = 4
+
+[node name="LogToggleButton" type="Button" parent="Margin/VBox/GamePanel/GameVBox/LogSection"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "▶ Match log"
+
+[node name="LogScroll" type="ScrollContainer" parent="Margin/VBox/GamePanel/GameVBox/LogSection"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(0, 80)
+layout_mode = 2
+size_flags_vertical = 3
+
+[node name="LogLabel" type="Label" parent="Margin/VBox/GamePanel/GameVBox/LogSection/LogScroll"]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+custom_minimum_size = Vector2(480, 0)
+autowrap_mode = 3
+text = ""

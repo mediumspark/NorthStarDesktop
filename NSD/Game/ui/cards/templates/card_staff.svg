@@ -1,0 +1,29 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
+  <defs>
+    <clipPath id="staffArtClip">
+      <rect x="18" y="78" width="339" height="248" rx="4"/>
+    </clipPath>
+  </defs>
+  <!-- Outer border -->
+  <rect x="4" y="4" width="367" height="517" rx="12" fill="#9a9a9a" stroke="#666" stroke-width="2"/>
+  <rect x="12" y="12" width="351" height="501" rx="8" fill="#ffffff"/>
+  <!-- Art window -->
+  <rect x="18" y="78" width="339" height="248" fill="#ffffff" stroke="#e0e0e0" stroke-width="1"/>
+  <!-- Cost circle placeholder (TL) -->
+  <circle cx="52" cy="52" r="30" fill="#00CED1" stroke="#009a9c" stroke-width="2"/>
+  <!-- Type bar placeholder (top center) -->
+  <rect x="98" y="28" width="220" height="48" rx="24" fill="#00CED1" stroke="#009a9c" stroke-width="2"/>
+  <circle cx="208" cy="52" r="18" fill="#b0b0b0"/>
+  <!-- Coffee cup icon placeholder -->
+  <g transform="translate(196,40)" fill="#222">
+    <rect x="4" y="8" width="16" height="14" rx="2" fill="none" stroke="#222" stroke-width="1.5"/>
+    <path d="M20 10 Q24 10 24 14 Q24 18 20 18" fill="none" stroke="#222" stroke-width="1.5"/>
+    <ellipse cx="12" cy="8" rx="8" ry="2"/>
+  </g>
+  <!-- Name plate placeholder -->
+  <rect x="48" y="288" width="279" height="42" rx="21" fill="#00CED1" stroke="#009a9c" stroke-width="2"/>
+  <!-- Notched footer -->
+  <path d="M18 340 L18 505 Q18 513 26 513 L349 513 Q357 513 357 505 L357 340
+           Q357 332 349 332 L318 332 Q310 348 294 348 L81 348 Q65 348 57 332 L26 332 Q18 332 18 340 Z"
+        fill="#00CED1" stroke="#009a9c" stroke-width="2"/>
+</svg>

@@ -1,0 +1,31 @@
+<svg xmlns="http://www.w3.org/2000/svg" viewBox="0 0 375 525" width="375" height="525">
+  <defs>
+    <clipPath id="mealArtClip">
+      <rect x="18" y="78" width="339" height="268" rx="4"/>
+    </clipPath>
+  </defs>
+  <!-- Outer border -->
+  <rect x="4" y="4" width="367" height="517" rx="12" fill="#9a9a9a" stroke="#666" stroke-width="2"/>
+  <rect x="12" y="12" width="351" height="501" rx="8" fill="#a8d8f0"/>
+  <!-- Sky / hills placeholder art -->
+  <g clip-path="url(#mealArtClip)">
+    <rect x="18" y="78" width="339" height="268" fill="#a8d8f0"/>
+    <ellipse cx="120" cy="130" rx="52" ry="28" fill="#ffffff" opacity="0.95"/>
+    <ellipse cx="155" cy="125" rx="38" ry="22" fill="#ffffff" opacity="0.95"/>
+    <ellipse cx="95" cy="138" rx="32" ry="18" fill="#ffffff" opacity="0.9"/>
+    <path d="M18 280 Q94 240 170 260 Q246 280 357 250 L357 346 L18 346 Z" fill="#7cb342"/>
+    <path d="M18 310 Q140 270 280 295 Q320 305 357 290 L357 346 L18 346 Z" fill="#558b2f"/>
+  </g>
+  <!-- Cost circle placeholder (TL) -->
+  <circle cx="52" cy="52" r="30" fill="#E84855" stroke="#b83240" stroke-width="2"/>
+  <!-- Food rating circle placeholder (TR) -->
+  <circle cx="323" cy="52" r="30" fill="#E84855" stroke="#b83240" stroke-width="2"/>
+  <!-- Name bar placeholder (top center) -->
+  <rect x="88" y="28" width="200" height="48" rx="24" fill="#E84855" stroke="#b83240" stroke-width="2"/>
+  <!-- Type banner on art -->
+  <rect x="118" y="298" width="140" height="36" rx="18" fill="#E84855" stroke="#b83240" stroke-width="2"/>
+  <!-- Notched footer -->
+  <path d="M18 360 L18 505 Q18 513 26 513 L349 513 Q357 513 357 505 L357 360
+           Q357 352 349 352 L318 352 Q310 368 294 368 L81 368 Q65 368 57 352 L26 352 Q18 352 18 360 Z"
+        fill="#E84855" stroke="#b83240" stroke-width="2"/>
+</svg>
