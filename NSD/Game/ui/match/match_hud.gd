@@ -4,18 +4,28 @@ class_name MatchHud
 ## Shared HUD helpers for CPU matches (star tracks, phase labels).
 
 
-static func rebuild_star_track(row: HBoxContainer, caption: String, stars: int, max_stars: int, filled: Color, empty: Color) -> void:
+static func rebuild_star_track(
+	row: HBoxContainer,
+	caption: String,
+	stars: int,
+	max_stars: int,
+	filled: Color,
+	empty: Color,
+	compact: bool = false
+) -> void:
 	for c in row.get_children():
 		c.queue_free()
-	var cap := Label.new()
-	cap.text = caption
-	cap.add_theme_font_size_override("font_size", 12)
-	cap.add_theme_color_override("font_color", Color(0.72, 0.75, 0.82))
-	row.add_child(cap)
+	if not compact and not caption.is_empty():
+		var cap := Label.new()
+		cap.text = caption
+		cap.add_theme_font_size_override("font_size", 10)
+		cap.add_theme_color_override("font_color", Color(0.72, 0.75, 0.82))
+		row.add_child(cap)
+	var star_size := 16 if compact else 20
 	for i in range(maxi(1, max_stars)):
 		var star := Label.new()
 		star.text = "★"
-		star.add_theme_font_size_override("font_size", 20)
+		star.add_theme_font_size_override("font_size", star_size)
 		star.add_theme_color_override("font_color", filled if i < stars else empty)
 		row.add_child(star)
 

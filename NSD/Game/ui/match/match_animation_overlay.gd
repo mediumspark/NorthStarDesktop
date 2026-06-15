@@ -19,6 +19,22 @@ func _ready() -> void:
 	layer = 90
 	visible = false
 	_reset_visuals()
+	get_viewport().size_changed.connect(_apply_viewport_layout)
+	call_deferred("_apply_viewport_layout")
+
+
+func _apply_viewport_layout() -> void:
+	if _panel == null:
+		return
+	var vp := get_viewport().get_visible_rect().size
+	if vp.x < 1.0:
+		return
+	var w := minf(520.0, vp.x * 0.88)
+	var h := minf(340.0, vp.y * 0.45)
+	_panel.offset_left = -w * 0.5
+	_panel.offset_top = -h * 0.5
+	_panel.offset_right = w * 0.5
+	_panel.offset_bottom = h * 0.5
 
 
 static func attach(host: Node) -> MatchAnimationOverlay:

@@ -6,9 +6,8 @@ const BUNDLED_SAMPLE_LOADOUT := "res://data/bundled_sample_loadout.json"
 const _CARD_EFFECT_REGISTRY := preload("res://scripts/card_effects/card_effect_registry.gd")
 const _MatchAnimationOverlay := preload("res://ui/match/match_animation_overlay.gd")
 const _MatchHud := preload("res://ui/match/match_hud.gd")
-const LINE_CARD_OPTS := {"display_w": 80.0, "display_h": 126.0}
-const MULLIGAN_CARD_OPTS := {"display_w": 100.0, "display_h": 158.0}
-const RESTAURANT_BAR_OPTS := {"display_w": 88.0, "display_h": 144.0}
+const _MatchLayout := preload("res://ui/match/match_layout.gd")
+const _MatchHandFan := preload("res://ui/match/match_hand_fan.gd")
 const CPU_SETUP_CARD_DELAY := 0.35
 
 var _tables_data: Dictionary = {}
@@ -35,6 +34,7 @@ func _ready() -> void:
 	%RemoveLastButton.pressed.connect(_on_remove_last_setup)
 	%LockSetupButton.pressed.connect(_on_lock_setup)
 	%RevealFaceoffButton.pressed.connect(_on_reveal_faceoff)
+	%BattleRoot.resized.connect(_on_battle_root_resized)
 	_set_log_expanded(false)
 	call_deferred("_ensure_preview")
 	SupabaseClient.batch_progress.connect(_on_batch_progress)
@@ -49,6 +49,38 @@ func _ready() -> void:
 		)
 		return
 	SupabaseClient.fetch_all_tables()
+
+
+func _viewport_size() -> Vector2:
+	var vp := get_viewport().get_visible_rect().size
+	if vp.x > 1.0 and vp.y > 1.0:
+		return vp
+	return Vector2(1280.0, 720.0)
+
+
+func _line_opts() -> Dictionary:
+	return _MatchLayout.line_card_opts(_viewport_size())
+
+
+func _hand_opts() -> Dictionary:
+	return _MatchLayout.hand_card_opts(_viewport_size())
+
+
+func _mulligan_opts() -> Dictionary:
+	return _MatchLayout.mulligan_card_opts(_viewport_size())
+
+
+func _portrait_opts() -> Dictionary:
+	return _MatchLayout.portrait_opts(_viewport_size())
+
+
+func _pick_opts() -> Dictionary:
+	return _MatchLayout.pick_card_opts(_viewport_size())
+
+
+func _on_battle_root_resized() -> void:
+	if _match != null:
+		_refresh_all_ui()
 
 
 func _ensure_preview() -> void:
@@ -243,19 +275,21 @@ func _on_phase_changed(_p: int) -> void:
 func _on_stars_changed(h: int, c: int) -> void:
 	_MatchHud.rebuild_star_track(
 		%YouStarsTrack,
-		"You",
+		"",
 		h,
 		MatchConfig.STARS_TO_WIN,
 		Color(0.45, 0.78, 1.0),
-		Color(0.28, 0.3, 0.36)
+		Color(0.28, 0.3, 0.36),
+		true
 	)
 	_MatchHud.rebuild_star_track(
 		%CpuStarsTrack,
-		"CPU",
+		"",
 		c,
 		MatchConfig.STARS_TO_WIN,
 		Color(1.0, 0.55, 0.45),
-		Color(0.28, 0.3, 0.36)
+		Color(0.28, 0.3, 0.36),
+		true
 	)
 
 
@@ -268,8 +302,12 @@ func _refresh_match_hud() -> void:
 		_match.is_faceoff_pending()
 	)
 	var rnd := _match.get_setup_round()
-	%RoundLabel.text = "Round %d" % rnd if rnd > 0 else ""
+	%RoundLabel.text = "R%d" % rnd if rnd > 0 else ""
 	%RoundLabel.visible = rnd > 0
+	%StepTitle.add_theme_font_size_override(
+		"font_size",
+		_MatchLayout.step_title_font_size(_viewport_size())
+	)
 
 
 func _on_game_over(result: String) -> void:
@@ -305,13 +343,21 @@ func _set_error(s: String) -> void:
 
 
 func _hide_gameplay() -> void:
-	%GamePanel.visible = false
+	%BattleRoot.visible = false
+
+
+func _set_board_chrome_visible(show_board: bool) -> void:
+	%BoardChrome.visible = show_board
+
+
+func _set_modal_open(open: bool) -> void:
+	%ModalDim.visible = open
 
 
 func _set_log_expanded(expanded: bool) -> void:
 	_log_expanded = expanded
 	%LogScroll.visible = expanded
-	%LogToggleButton.text = "▼ Match log" if expanded else "▶ Match log"
+	%LogToggleButton.text = "▼ Log" if expanded else "▶ Log"
 
 
 func _on_log_toggle_pressed() -> void:
@@ -351,7 +397,7 @@ func _show_status_banner(text: String, duration: float = 3.0) -> void:
 func _refresh_all_ui() -> void:
 	if _match == null:
 		return
-	%GamePanel.visible = true
+	%BattleRoot.visible = true
 	_refresh_match_hud()
 	_on_stars_changed(int(_match.stars[MatchState.P_HUMAN]), int(_match.stars[MatchState.P_CPU]))
 	_refresh_active_restaurants_ui()
@@ -373,46 +419,57 @@ func _refresh_all_ui() -> void:
 
 
 func _hide_phase_panels() -> void:
+	_set_modal_open(false)
 	%PickPanel.visible = false
 	%MulliganPanel.visible = false
 	%SetupPanel.visible = false
+	_set_board_chrome_visible(true)
 	%HandRow.visible = false
+	%HandDock.visible = false
+	%ActionRail.visible = false
 
 
 func _refresh_active_restaurants_ui() -> void:
 	if _match == null:
-		%ActiveRestaurantsPanel.visible = false
 		return
 	var human_rest := _match.get_active_restaurant(MatchState.P_HUMAN)
 	var cpu_rest := _match.get_active_restaurant(MatchState.P_CPU)
-	var show := not human_rest.is_empty() and not cpu_rest.is_empty()
-	%ActiveRestaurantsPanel.visible = show
-	if not show:
-		return
 	_ensure_preview()
-	_rebuild_restaurant_slot(%CpuRestaurantRow, cpu_rest)
-	_rebuild_restaurant_slot(%HumanRestaurantRow, human_rest)
+	if cpu_rest.is_empty():
+		for c in %CpuRestaurantRow.get_children():
+			c.queue_free()
+	else:
+		_rebuild_restaurant_slot(%CpuRestaurantRow, cpu_rest)
+	if human_rest.is_empty():
+		for c in %HumanRestaurantRow.get_children():
+			c.queue_free()
+	else:
+		_rebuild_restaurant_slot(%HumanRestaurantRow, human_rest)
 
 
 func _rebuild_restaurant_slot(row: HBoxContainer, rest_row: Dictionary) -> void:
 	for c in row.get_children():
 		c.queue_free()
 	var tile := CardTileButton.new()
-	tile.setup_card(DeckRules.RESTAURANT_TABLE, rest_row, RESTAURANT_BAR_OPTS)
+	tile.setup_card(DeckRules.RESTAURANT_TABLE, rest_row, _portrait_opts())
 	CardPreviewSidebar.wire_tile(tile, _preview)
 	row.add_child(tile)
 
 
 func _refresh_pick_restaurant_ui() -> void:
 	_ensure_preview()
+	_set_modal_open(true)
+	_set_board_chrome_visible(false)
 	%PickPanel.visible = true
 	%MulliganPanel.visible = false
 	%SetupPanel.visible = false
-	%HandRow.visible = false
+	%HandDock.visible = false
+	%ActionRail.visible = false
 	%StepTitle.text = "Choose starting restaurant"
 	for c in %PickRestaurantRow.get_children():
 		c.queue_free()
 	var pv := _match.restaurant_top_bottom_preview(MatchState.P_HUMAN)
+	var pick_opts := _pick_opts()
 	if bool(pv.get("ok", false)):
 		var top: Dictionary = pv.get("top", {}) as Dictionary
 		var bot: Dictionary = pv.get("bottom", {}) as Dictionary
@@ -423,16 +480,16 @@ func _refresh_pick_restaurant_ui() -> void:
 		var single := _match.get_restaurant_deck_size(MatchState.P_HUMAN) == 1
 		if single:
 			var card := RestaurantPickCard.new()
-			card.setup_pick(top, row_t, "YOUR RESTAURANT", Callable(self, "_on_pick_top_pressed"))
+			card.setup_pick(top, row_t, "YOUR RESTAURANT", Callable(self, "_on_pick_top_pressed"), pick_opts)
 			CardPreviewSidebar.wire_tile(card, _preview)
 			%PickRestaurantRow.add_child(card)
 		else:
 			var c_top := RestaurantPickCard.new()
-			c_top.setup_pick(top, row_t, "TOP OF DECK", Callable(self, "_on_pick_top_pressed"))
+			c_top.setup_pick(top, row_t, "TOP OF DECK", Callable(self, "_on_pick_top_pressed"), pick_opts)
 			CardPreviewSidebar.wire_tile(c_top, _preview)
 			%PickRestaurantRow.add_child(c_top)
 			var c_bot := RestaurantPickCard.new()
-			c_bot.setup_pick(bot, row_b, "BOTTOM OF DECK", Callable(self, "_on_pick_bottom_pressed"))
+			c_bot.setup_pick(bot, row_b, "BOTTOM OF DECK", Callable(self, "_on_pick_bottom_pressed"), pick_opts)
 			CardPreviewSidebar.wire_tile(c_bot, _preview)
 			%PickRestaurantRow.add_child(c_bot)
 	else:
@@ -462,11 +519,14 @@ func _card_display_name(table: String, card: Dictionary) -> String:
 
 
 func _refresh_mulligan_ui() -> void:
+	_set_modal_open(true)
+	_set_board_chrome_visible(false)
 	%StepTitle.text = "Mulligan (once, all-or-nothing)"
 	%MulliganPanel.visible = true
-	%SetupPanel.visible = false
 	%PickPanel.visible = false
-	%HandRow.visible = false
+	%SetupPanel.visible = false
+	%HandDock.visible = false
+	%ActionRail.visible = false
 	_ensure_preview()
 	for c in %MulliganHandRow.get_children():
 		c.queue_free()
@@ -478,39 +538,50 @@ func _refresh_mulligan_ui() -> void:
 		var t := str(card.get("table", ""))
 		var row := _resolve_row(t, str(card.get("id", "")))
 		var tile := CardTileButton.new()
-		tile.setup_card(t, row, MULLIGAN_CARD_OPTS)
+		tile.setup_card(t, row, _mulligan_opts())
 		CardPreviewSidebar.wire_tile(tile, _preview)
 		%MulliganHandRow.add_child(tile)
+	call_deferred("_layout_mulligan_fan")
+
+
+func _layout_mulligan_fan() -> void:
+	_MatchHandFan.apply_to(%MulliganHandRow)
 
 
 func _set_cpu_influence_label(remaining: int, base: int) -> void:
-	%CpuInfluenceLabel.text = "CPU influence: %d / %d" % [remaining, base]
+	%CpuInfluenceLabel.text = "Inf %d/%d" % [remaining, base]
 
 
 func _refresh_setup_ui() -> void:
+	_set_modal_open(false)
+	_set_board_chrome_visible(true)
+	%PickPanel.visible = false
+	%MulliganPanel.visible = false
+	%SetupPanel.visible = true
+	%HandDock.visible = true
+	%ActionRail.visible = true
+	%OpponentZone.visible = true
+	%PlayerBenchZone.visible = true
 	if _match.is_faceoff_pending() and not _cpu_setup_animating:
-		%StepTitle.text = "Review both lines — reveal Faceoff when ready."
+		%StepTitle.text = "Review — reveal Faceoff when ready"
 	elif _cpu_setup_animating:
 		%StepTitle.text = "CPU is setting its line…"
 	else:
-		%StepTitle.text = "Setup — place Staff, Meals, and Events (influence refreshes each round)"
-	%MulliganPanel.visible = false
-	%SetupPanel.visible = true
-	%PickPanel.visible = false
+		%StepTitle.text = "Setup — place cards on your line"
 	var pending := _match.is_faceoff_pending() and not _cpu_setup_animating
 	%HandRow.visible = not pending and not _cpu_setup_animating
 	%HandHint.visible = not pending and not _cpu_setup_animating
 	if pending:
-		%HandHint.text = "Line locked. Reveal Faceoff when ready."
+		%HandHint.text = "Line locked — tap Reveal when ready."
 	else:
-		%HandHint.text = "Hand — tap a card to add it to your line (Staff, Meal, Event). Support is not set face-down in v1."
+		%HandHint.text = "Tap a hand card to add it to your line."
 	var base_inf := _match.get_base_influence_value()
-	%InfluenceLabel.text = "Your influence: %d / %d" % [
+	%InfluenceLabel.text = "Inf %d/%d" % [
 		_match.get_influence(MatchState.P_HUMAN),
 		base_inf,
 	]
 	if _cpu_setup_animating:
-		pass # influence label updated by animation
+		pass
 	elif pending:
 		_set_cpu_influence_label(_match.get_influence(MatchState.P_CPU), base_inf)
 	else:
@@ -565,10 +636,15 @@ func _refresh_hand_buttons() -> void:
 		var row := _resolve_row(t, id_str)
 		var fx = _CARD_EFFECT_REGISTRY.make(t, id_str, row)
 		var hc := CpuHandCard.new()
-		hc.setup_from(i, fx)
+		hc.setup_from(i, fx, _hand_opts())
 		hc.card_chosen.connect(_on_add_hand_card)
 		CardPreviewSidebar.wire_tile(hc, _preview)
 		%HandRow.add_child(hc)
+	call_deferred("_layout_hand_fan")
+
+
+func _layout_hand_fan() -> void:
+	_MatchHandFan.apply_to(%HandRow)
 
 
 func _rebuild_line_row(row: HBoxContainer, cards: Array, conceal: bool) -> void:
@@ -580,6 +656,7 @@ func _rebuild_line_row_reveal(row: HBoxContainer, cards: Array, face_up_through:
 	_ensure_preview()
 	for c in row.get_children():
 		c.queue_free()
+	var opts_base := _line_opts()
 	for i in range(cards.size()):
 		var card: Variant = cards[i]
 		if typeof(card) != TYPE_DICTIONARY:
@@ -588,7 +665,7 @@ func _rebuild_line_row_reveal(row: HBoxContainer, cards: Array, face_up_through:
 		var t := str(d.get("table", ""))
 		var id_str := str(d.get("id", ""))
 		var card_row := _resolve_row(t, id_str)
-		var opts: Dictionary = LINE_CARD_OPTS.duplicate()
+		var opts: Dictionary = opts_base.duplicate()
 		opts["face_down"] = i > face_up_through
 		var tile := CardTileButton.new()
 		tile.setup_card(t, card_row, opts)
