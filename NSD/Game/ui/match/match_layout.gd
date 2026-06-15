@@ -8,8 +8,8 @@ const SCALE_MAX := 1.0
 
 const BASE_LINE_W := 80.0
 const BASE_LINE_H := 126.0
-const BASE_HAND_W := 100.0
-const BASE_HAND_H := 158.0
+const BASE_HAND_W := 132.0
+const BASE_HAND_H := 206.0
 const BASE_PORTRAIT_W := 72.0
 const BASE_PORTRAIT_H := 118.0
 const BASE_PICK_W := 132.0
@@ -54,3 +54,25 @@ static func pick_card_opts(viewport: Vector2) -> Dictionary:
 static func step_title_font_size(viewport: Vector2) -> int:
 	var s := scale_factor(viewport)
 	return int(round(lerpf(14.0, 20.0, (s - SCALE_MIN) / maxf(0.001, SCALE_MAX - SCALE_MIN))))
+
+
+static func hand_fan_host_min_height(viewport: Vector2) -> int:
+	var s := scale_factor(viewport)
+	return int(round(lerpf(130.0, 200.0, (s - SCALE_MIN) / maxf(0.001, SCALE_MAX - SCALE_MIN))))
+
+
+## Fraction of each hand card visible above the screen bottom (LoR-style peek).
+static func hand_card_peek_ratio() -> float:
+	return 0.17
+
+
+static func hand_bell_peak_height(viewport: Vector2) -> float:
+	var s := scale_factor(viewport)
+	return lerpf(14.0, 22.0, (s - SCALE_MIN) / maxf(0.001, SCALE_MAX - SCALE_MIN))
+
+
+static func hand_peek_strip_height(viewport: Vector2) -> int:
+	var card_h: float = hand_card_opts(viewport)["display_h"]
+	var peek := hand_card_peek_ratio()
+	var bell := hand_bell_peak_height(viewport)
+	return int(round(card_h * peek + bell + 16.0))

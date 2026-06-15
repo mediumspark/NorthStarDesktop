@@ -35,6 +35,8 @@ func _ready() -> void:
 	%LockSetupButton.pressed.connect(_on_lock_setup)
 	%RevealFaceoffButton.pressed.connect(_on_reveal_faceoff)
 	%BattleRoot.resized.connect(_on_battle_root_resized)
+	%BattleRootInner.resized.connect(_on_hand_fan_host_resized)
+	%HandFanHost.resized.connect(_on_hand_fan_host_resized)
 	_set_log_expanded(false)
 	call_deferred("_ensure_preview")
 	SupabaseClient.batch_progress.connect(_on_batch_progress)
@@ -81,6 +83,18 @@ func _pick_opts() -> Dictionary:
 func _on_battle_root_resized() -> void:
 	if _match != null:
 		_refresh_all_ui()
+
+
+func _on_hand_fan_host_resized() -> void:
+	if _match == null:
+		return
+	if _match.phase != MatchState.Phase.SETUP:
+		return
+	if _match.is_faceoff_pending() or _cpu_setup_animating:
+		return
+	if not %HandRow.visible:
+		return
+	_layout_hand_fan()
 
 
 func _ensure_preview() -> void:
@@ -541,11 +555,8 @@ func _refresh_mulligan_ui() -> void:
 		tile.setup_card(t, row, _mulligan_opts())
 		CardPreviewSidebar.wire_tile(tile, _preview)
 		%MulliganHandRow.add_child(tile)
-	call_deferred("_layout_mulligan_fan")
-
-
-func _layout_mulligan_fan() -> void:
-	_MatchHandFan.apply_to(%MulliganHandRow)
+	var card_h: float = _mulligan_opts().get("display_h", 158.0)
+	%MulliganHandRow.custom_minimum_size.y = int(card_h) + 8
 
 
 func _set_cpu_influence_label(remaining: int, base: int) -> void:
@@ -643,8 +654,41 @@ func _refresh_hand_buttons() -> void:
 	call_deferred("_layout_hand_fan")
 
 
-func _layout_hand_fan() -> void:
-	_MatchHandFan.apply_to(%HandRow)
+func _layout_hand_fan(retry: bool = false) -> void:
+	var vp := _viewport_size()
+	var peek_h := _MatchLayout.hand_peek_strip_height(vp)
+	%HandFanHost.custom_minimum_size.y = peek_h
+	var dock: Control = %HandDock
+	var dock_h := float(peek_h + 22)
+	dock.anchor_left = 0.0
+	dock.anchor_right = 1.0
+	dock.anchor_top = 1.0
+	dock.anchor_bottom = 1.0
+	dock.offset_left = 0.0
+	dock.offset_top = -dock_h
+	dock.offset_right = 0.0
+	dock.offset_bottom = 0.0
+	var spread: float = %HandRow.size.x
+	if spread < 8.0:
+		spread = %HandFanHost.size.x
+	if spread < 8.0:
+		spread = dock.size.x
+	var inner: Control = %BattleRootInner
+	var apex_local_x := inner.global_position.x + inner.size.x * 0.5 - %HandRow.global_position.x
+	if not _MatchHandFan.apply_to(
+		%HandRow,
+		spread,
+		_MatchLayout.hand_card_peek_ratio(),
+		_MatchHandFan.FanShape.BELL_CURVE,
+		_MatchLayout.hand_bell_peak_height(vp),
+		apex_local_x
+	):
+		if not retry:
+			call_deferred("_layout_hand_fan_retry")
+
+
+func _layout_hand_fan_retry() -> void:
+	_layout_hand_fan(true)
 
 
 func _rebuild_line_row(row: HBoxContainer, cards: Array, conceal: bool) -> void:

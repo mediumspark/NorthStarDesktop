@@ -1,12 +1,138 @@
-[gd_scene load_steps=5 format=3 uid="uid://stubcpu01"]
+[gd_scene format=3 uid="uid://stubcpu01"]
 
-[ext_resource type="Script" path="res://scenes/cpu_matches.gd" id="1_cpu"]
-[ext_resource type="Theme" path="res://ui/deck_building_theme.tres" id="2_theme"]
-[ext_resource type="StyleBoxFlat" path="res://ui/deck_tile_style.tres" id="3_tile"]
+[ext_resource type="Script" uid="uid://bhh3jf06yriht" path="res://scenes/cpu_matches.gd" id="1_cpu"]
+[ext_resource type="Theme" uid="uid://cobkltoyabfbu" path="res://ui/deck_building_theme.tres" id="2_theme"]
+[ext_resource type="AudioStream" uid="uid://b7s1e1umjaj8i" path="res://music/battle_1.mp3" id="4_battle"]
 
-[ext_resource type="AudioStream" path="res://music/battle_1.mp3" id="4_battle"]
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_top_hud"]
+bg_color = Color(0.95, 0.85, 0.15, 0.2)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.95, 0.85, 0.15, 0.65)
 
-[node name="CpuMatches" type="Control"]
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_battle_root"]
+bg_color = Color(0.35, 0.28, 0.55, 0.18)
+border_width_left = 3
+border_width_top = 3
+border_width_right = 3
+border_width_bottom = 3
+border_color = Color(0.55, 0.45, 0.85, 0.75)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_board"]
+bg_color = Color(0.45, 0.45, 0.5, 0.15)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.65, 0.65, 0.7, 0.5)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_cpu"]
+bg_color = Color(0.9, 0.2, 0.2, 0.22)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.35, 0.35, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_cpu_line"]
+bg_color = Color(0.7, 0.15, 0.15, 0.18)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.9, 0.25, 0.25, 0.5)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_cpu_wing"]
+bg_color = Color(1, 0.35, 0.35, 0.15)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(1, 0.45, 0.45, 0.45)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_center"]
+bg_color = Color(0.15, 0.85, 0.9, 0.2)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.95, 1, 0.65)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_player"]
+bg_color = Color(0.15, 0.75, 0.3, 0.22)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.25, 0.95, 0.4, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_player_line"]
+bg_color = Color(0.1, 0.55, 0.2, 0.18)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.2, 0.75, 0.3, 0.5)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_player_wing"]
+bg_color = Color(0.25, 0.85, 0.35, 0.15)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.35, 0.95, 0.45, 0.45)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_action"]
+bg_color = Color(0.85, 0.2, 0.85, 0.2)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.35, 1, 0.65)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_hand"]
+bg_color = Color(0.2, 0.45, 0.95, 0.28)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.35, 0.6, 1, 0.75)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_hand_host"]
+bg_color = Color(0.1, 0.25, 0.7, 0.25)
+border_width_left = 1
+border_width_top = 1
+border_width_right = 1
+border_width_bottom = 1
+border_color = Color(0.25, 0.45, 0.95, 0.55)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_pick"]
+bg_color = Color(0.55, 0.25, 0.9, 0.25)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.7, 0.4, 1, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_mulligan"]
+bg_color = Color(0.95, 0.5, 0.1, 0.22)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(1, 0.65, 0.2, 0.7)
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_dbg_log"]
+bg_color = Color(0.55, 0.35, 0.15, 0.25)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.75, 0.5, 0.2, 0.65)
+
+[node name="CpuMatches" type="Control" unique_id=410497521]
 layout_mode = 3
 anchors_preset = 15
 anchor_right = 1.0
@@ -16,13 +142,13 @@ grow_vertical = 2
 theme = ExtResource("2_theme")
 script = ExtResource("1_cpu")
 
-[node name="BattleMusic" type="AudioStreamPlayer" parent="."]
+[node name="BattleMusic" type="AudioStreamPlayer" parent="." unique_id=702138299]
 unique_name_in_owner = true
 stream = ExtResource("4_battle")
 volume_db = -8.0
 parameters/looping = true
 
-[node name="Background" type="ColorRect" parent="."]
+[node name="Background" type="ColorRect" parent="." unique_id=1873958932]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -32,7 +158,7 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.055, 0.06, 0.075, 1)
 
-[node name="Margin" type="MarginContainer" parent="."]
+[node name="Margin" type="MarginContainer" parent="." unique_id=1662401710]
 layout_mode = 1
 anchors_preset = 15
 anchor_right = 1.0
@@ -44,64 +170,71 @@ theme_override_constants/margin_top = 8
 theme_override_constants/margin_right = 10
 theme_override_constants/margin_bottom = 8
 
-[node name="VBox" type="VBoxContainer" parent="Margin"]
+[node name="VBox" type="VBoxContainer" parent="Margin" unique_id=1789379857]
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
 theme_override_constants/separation = 6
 
-[node name="TopHud" type="HBoxContainer" parent="Margin/VBox"]
+[node name="TopHud" type="PanelContainer" parent="Margin/VBox" unique_id=941865866]
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_top_hud")
+
+[node name="TopHudHBox" type="HBoxContainer" parent="Margin/VBox/TopHud" unique_id=1246548852]
 layout_mode = 2
 theme_override_constants/separation = 10
 
-[node name="BackButton" type="Button" parent="Margin/VBox/TopHud"]
+[node name="BackButton" type="Button" parent="Margin/VBox/TopHud/TopHudHBox" unique_id=1013790373]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(100, 0)
 layout_mode = 2
 text = "Menu"
 
-[node name="PhaseBadge" type="Label" parent="Margin/VBox/TopHud"]
+[node name="PhaseBadge" type="Label" parent="Margin/VBox/TopHud/TopHudHBox" unique_id=1674622911]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 13
 theme_override_colors/font_color = Color(0.85, 0.88, 0.95, 1)
+theme_override_font_sizes/font_size = 13
 text = "…"
 
-[node name="RoundLabel" type="Label" parent="Margin/VBox/TopHud"]
+[node name="RoundLabel" type="Label" parent="Margin/VBox/TopHud/TopHudHBox" unique_id=1915794714]
 unique_name_in_owner = true
 layout_mode = 2
-theme_override_font_sizes/font_size = 11
 theme_override_colors/font_color = Color(0.6, 0.63, 0.72, 1)
-text = ""
+theme_override_font_sizes/font_size = 11
 
-[node name="TopSpacer" type="Control" parent="Margin/VBox/TopHud"]
+[node name="TopSpacer" type="Control" parent="Margin/VBox/TopHud/TopHudHBox" unique_id=979982851]
 layout_mode = 2
 size_flags_horizontal = 3
 
-[node name="StatusLabel" type="Label" parent="Margin/VBox/TopHud"]
+[node name="StatusLabel" type="Label" parent="Margin/VBox/TopHud/TopHudHBox" unique_id=124108264]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-autowrap_mode = 3
-horizontal_alignment = 2
 theme_override_font_sizes/font_size = 11
 text = "…"
+horizontal_alignment = 2
+autowrap_mode = 3
 
-[node name="ErrorLabel" type="Label" parent="Margin/VBox"]
+[node name="ErrorLabel" type="Label" parent="Margin/VBox" unique_id=955090366]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 theme_override_colors/font_color = Color(1, 0.45, 0.45, 1)
 autowrap_mode = 3
 
-[node name="BattleRoot" type="Control" parent="Margin/VBox"]
+[node name="BattleRoot" type="PanelContainer" parent="Margin/VBox" unique_id=1474685165]
 unique_name_in_owner = true
-visible = false
 layout_mode = 2
 size_flags_horizontal = 3
 size_flags_vertical = 3
+theme_override_styles/panel = SubResource("StyleBox_dbg_battle_root")
 
-[node name="BoardChrome" type="VBoxContainer" parent="Margin/VBox/BattleRoot"]
+[node name="BattleRootInner" type="Control" parent="Margin/VBox/BattleRoot" unique_id=896681134]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="BoardChrome" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner" unique_id=382103765]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 15
@@ -109,203 +242,208 @@ anchor_right = 1.0
 anchor_bottom = 1.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_board")
+
+[node name="BoardVBox" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome" unique_id=778282340]
+layout_mode = 2
+size_flags_horizontal = 3
+size_flags_vertical = 3
 theme_override_constants/separation = 4
 
-[node name="OpponentZone" type="PanelContainer" parent="Margin/VBox/BattleRoot/BoardChrome"]
+[node name="OpponentZone" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox" unique_id=893909217]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
-size_flags_stretch_ratio = 3.2
-theme_override_styles/panel = ExtResource("3_tile")
+size_flags_stretch_ratio = 2.2
+theme_override_styles/panel = SubResource("StyleBox_dbg_cpu")
 
-[node name="OpponentHBox" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/OpponentZone"]
+[node name="OpponentHBox" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone" unique_id=425990871]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="CpuPortraitCol" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/OpponentZone/OpponentHBox"]
-layout_mode = 2
+[node name="CpuPortraitCol" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox" unique_id=1110673148]
 custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_cpu")
+
+[node name="CpuPortraitVBox" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox/CpuPortraitCol" unique_id=293358083]
+layout_mode = 2
 theme_override_constants/separation = 2
 alignment = 1
 
-[node name="CpuPortraitCaption" type="Label" parent="Margin/VBox/BattleRoot/BoardChrome/OpponentZone/OpponentHBox/CpuPortraitCol"]
+[node name="CpuPortraitCaption" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox/CpuPortraitCol/CpuPortraitVBox" unique_id=1405659802]
 layout_mode = 2
-theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.7, 0.73, 0.8, 1)
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 10
 text = "CPU"
+horizontal_alignment = 1
 
-[node name="CpuRestaurantRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/OpponentZone/OpponentHBox/CpuPortraitCol"]
+[node name="CpuRestaurantRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox/CpuPortraitCol/CpuPortraitVBox" unique_id=632444321]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="CpuLineScroll" type="ScrollContainer" parent="Margin/VBox/BattleRoot/BoardChrome/OpponentZone/OpponentHBox"]
+[node name="CpuLinePanel" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox" unique_id=194298073]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_dbg_cpu_line")
+
+[node name="CpuLineScroll" type="ScrollContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox/CpuLinePanel" unique_id=1349678383]
 layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 2
 vertical_scroll_mode = 0
 
-[node name="CpuLineRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/OpponentZone/OpponentHBox/CpuLineScroll"]
+[node name="CpuLineRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox/CpuLinePanel/CpuLineScroll" unique_id=1826576357]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 theme_override_constants/separation = 4
 
-[node name="CpuWingCol" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/OpponentZone/OpponentHBox"]
-layout_mode = 2
+[node name="CpuWingCol" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox" unique_id=127848255]
 custom_minimum_size = Vector2(108, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_cpu_wing")
+
+[node name="CpuWingVBox" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox/CpuWingCol" unique_id=385980118]
+layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="CpuStarsTrack" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/OpponentZone/OpponentHBox/CpuWingCol"]
+[node name="CpuStarsTrack" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox/CpuWingCol/CpuWingVBox" unique_id=957946451]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 2
 alignment = 2
 
-[node name="CpuInfluenceLabel" type="Label" parent="Margin/VBox/BattleRoot/BoardChrome/OpponentZone/OpponentHBox/CpuWingCol"]
+[node name="CpuInfluenceLabel" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/OpponentZone/OpponentHBox/CpuWingCol/CpuWingVBox" unique_id=1063369345]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-horizontal_alignment = 2
 text = "Inf 0/0"
+horizontal_alignment = 2
 
-[node name="CenterStrip" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome"]
+[node name="CenterStrip" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox" unique_id=196361505]
 unique_name_in_owner = true
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_center")
+
+[node name="CenterVBox" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/CenterStrip" unique_id=1499230783]
 layout_mode = 2
 theme_override_constants/separation = 2
 
-[node name="StepTitle" type="Label" parent="Margin/VBox/BattleRoot/BoardChrome/CenterStrip"]
+[node name="StepTitle" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/CenterStrip/CenterVBox" unique_id=1171872052]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-horizontal_alignment = 1
 text = "Phase"
+horizontal_alignment = 1
 
-[node name="StatusBanner" type="Label" parent="Margin/VBox/BattleRoot/BoardChrome/CenterStrip"]
+[node name="StatusBanner" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/CenterStrip/CenterVBox" unique_id=471280517]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
-theme_override_font_sizes/font_size = 12
 theme_override_colors/font_color = Color(0.88, 0.92, 0.55, 1)
+theme_override_font_sizes/font_size = 12
 horizontal_alignment = 1
 autowrap_mode = 3
 max_lines_visible = 2
-text = ""
 
-[node name="PlayerBenchZone" type="PanelContainer" parent="Margin/VBox/BattleRoot/BoardChrome"]
+[node name="PlayerBenchZone" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox" unique_id=1195666414]
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_vertical = 3
 size_flags_stretch_ratio = 2.0
-theme_override_styles/panel = ExtResource("3_tile")
+theme_override_styles/panel = SubResource("StyleBox_dbg_player")
 
-[node name="PlayerHBox" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/PlayerBenchZone"]
+[node name="PlayerHBox" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone" unique_id=2104734424]
 layout_mode = 2
 theme_override_constants/separation = 8
 
-[node name="HumanPortraitCol" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/PlayerBenchZone/PlayerHBox"]
-layout_mode = 2
+[node name="HumanPortraitCol" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox" unique_id=1720672297]
 custom_minimum_size = Vector2(84, 0)
+layout_mode = 2
 theme_override_constants/separation = 2
 alignment = 1
 
-[node name="HumanPortraitCaption" type="Label" parent="Margin/VBox/BattleRoot/BoardChrome/PlayerBenchZone/PlayerHBox/HumanPortraitCol"]
+[node name="HumanPortraitCaption" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox/HumanPortraitCol" unique_id=1219934515]
 layout_mode = 2
-theme_override_font_sizes/font_size = 10
 theme_override_colors/font_color = Color(0.7, 0.73, 0.8, 1)
-horizontal_alignment = 1
+theme_override_font_sizes/font_size = 10
 text = "You"
+horizontal_alignment = 1
 
-[node name="HumanRestaurantRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/PlayerBenchZone/PlayerHBox/HumanPortraitCol"]
+[node name="HumanRestaurantRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox/HumanPortraitCol" unique_id=1340507149]
 unique_name_in_owner = true
 layout_mode = 2
 alignment = 1
 
-[node name="HumanLineScroll" type="ScrollContainer" parent="Margin/VBox/BattleRoot/BoardChrome/PlayerBenchZone/PlayerHBox"]
+[node name="HumanLinePanel" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox" unique_id=39929653]
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_dbg_player_line")
+
+[node name="HumanLineScroll" type="ScrollContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox/HumanLinePanel" unique_id=1842695178]
 layout_mode = 2
 size_flags_horizontal = 3
 horizontal_scroll_mode = 2
 vertical_scroll_mode = 0
 
-[node name="HumanLineRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/PlayerBenchZone/PlayerHBox/HumanLineScroll"]
+[node name="HumanLineRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox/HumanLinePanel/HumanLineScroll" unique_id=1683055237]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 4
 
-[node name="HumanWingCol" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/PlayerBenchZone/PlayerHBox"]
-layout_mode = 2
+[node name="HumanWingCol" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox" unique_id=341728476]
 custom_minimum_size = Vector2(108, 0)
+layout_mode = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_player_wing")
+
+[node name="HumanWingVBox" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox/HumanWingCol" unique_id=1258402059]
+layout_mode = 2
 theme_override_constants/separation = 4
 alignment = 1
 
-[node name="YouStarsTrack" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome/PlayerBenchZone/PlayerHBox/HumanWingCol"]
+[node name="YouStarsTrack" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox/HumanWingCol/HumanWingVBox" unique_id=1331918761]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_constants/separation = 2
 alignment = 2
 
-[node name="InfluenceLabel" type="Label" parent="Margin/VBox/BattleRoot/BoardChrome/PlayerBenchZone/PlayerHBox/HumanWingCol"]
+[node name="InfluenceLabel" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/PlayerBenchZone/PlayerHBox/HumanWingCol/HumanWingVBox" unique_id=1341870061]
 unique_name_in_owner = true
 layout_mode = 2
 theme_override_font_sizes/font_size = 11
-horizontal_alignment = 2
 text = "Inf 0/0"
+horizontal_alignment = 2
 
-[node name="HandDock" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome"]
+[node name="ActionRail" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox" unique_id=1770980497]
 unique_name_in_owner = true
 layout_mode = 2
-size_flags_vertical = 3
-size_flags_stretch_ratio = 2.4
-theme_override_constants/separation = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_action")
 
-[node name="HandHint" type="Label" parent="Margin/VBox/BattleRoot/BoardChrome/HandDock"]
-unique_name_in_owner = true
+[node name="ActionHBox" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/ActionRail" unique_id=1373502553]
 layout_mode = 2
-theme_override_font_sizes/font_size = 10
-horizontal_alignment = 1
-autowrap_mode = 3
-text = "Tap a card to add to your line."
-
-[node name="HandFanHost" type="Control" parent="Margin/VBox/BattleRoot/BoardChrome/HandDock"]
-layout_mode = 2
-size_flags_vertical = 3
-custom_minimum_size = Vector2(0, 100)
-
-[node name="HandRow" type="Control" parent="Margin/VBox/BattleRoot/BoardChrome/HandDock/HandFanHost"]
-unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-mouse_filter = 1
-
-[node name="ActionRail" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BoardChrome"]
-unique_name_in_owner = true
-layout_mode = 2
-alignment = 2
 theme_override_constants/separation = 8
+alignment = 2
 
-[node name="RemoveLastButton" type="Button" parent="Margin/VBox/BattleRoot/BoardChrome/ActionRail"]
+[node name="RemoveLastButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/ActionRail/ActionHBox" unique_id=1423066591]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Undo"
 
-[node name="LockSetupButton" type="Button" parent="Margin/VBox/BattleRoot/BoardChrome/ActionRail"]
+[node name="LockSetupButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/ActionRail/ActionHBox" unique_id=642413489]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Lock line"
 
-[node name="RevealFaceoffButton" type="Button" parent="Margin/VBox/BattleRoot/BoardChrome/ActionRail"]
+[node name="RevealFaceoffButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/ActionRail/ActionHBox" unique_id=641173306]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
 text = "Reveal"
 
-[node name="ModalDim" type="ColorRect" parent="Margin/VBox/BattleRoot"]
+[node name="ModalDim" type="ColorRect" parent="Margin/VBox/BattleRoot/BattleRootInner" unique_id=1025919816]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -317,7 +455,52 @@ grow_vertical = 2
 mouse_filter = 2
 color = Color(0.02, 0.025, 0.04, 0.72)
 
-[node name="PickPanel" type="VBoxContainer" parent="Margin/VBox/BattleRoot"]
+[node name="HandDock" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner" unique_id=1705184572]
+unique_name_in_owner = true
+z_index = 2
+layout_mode = 1
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 355.0
+offset_top = -64.0
+offset_right = -271.0
+offset_bottom = -12.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_hand")
+
+[node name="HandVBox" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/HandDock" unique_id=704418736]
+layout_mode = 2
+theme_override_constants/separation = 0
+alignment = 1
+
+[node name="HandHint" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/HandDock/HandVBox" unique_id=524917867]
+unique_name_in_owner = true
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_colors/font_color = Color(0.65, 0.68, 0.75, 0.85)
+theme_override_font_sizes/font_size = 9
+text = "Tap a card to add to your line."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="HandFanHost" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/HandDock/HandVBox" unique_id=796648975]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(0, 28)
+layout_mode = 2
+size_flags_horizontal = 3
+theme_override_styles/panel = SubResource("StyleBox_dbg_hand_host")
+
+[node name="HandRow" type="Control" parent="Margin/VBox/BattleRoot/BattleRootInner/HandDock/HandVBox/HandFanHost" unique_id=1674805733]
+unique_name_in_owner = true
+layout_direction = 2
+layout_mode = 2
+mouse_filter = 1
+
+[node name="PickPanel" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner" unique_id=1723389786]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -332,22 +515,26 @@ offset_right = 220.0
 offset_bottom = 120.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_pick")
+
+[node name="PickVBox" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/PickPanel" unique_id=1156991956]
+layout_mode = 2
 theme_override_constants/separation = 12
 alignment = 1
 
-[node name="PickTitle" type="Label" parent="Margin/VBox/BattleRoot/PickPanel"]
+[node name="PickTitle" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/PickPanel/PickVBox" unique_id=1309449229]
 layout_mode = 2
 theme_override_font_sizes/font_size = 16
-horizontal_alignment = 1
 text = "Choose starting restaurant"
+horizontal_alignment = 1
 
-[node name="PickRestaurantRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/PickPanel"]
+[node name="PickRestaurantRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/PickPanel/PickVBox" unique_id=1128336936]
 unique_name_in_owner = true
 layout_mode = 2
-alignment = 1
 theme_override_constants/separation = 16
+alignment = 1
 
-[node name="MulliganPanel" type="VBoxContainer" parent="Margin/VBox/BattleRoot"]
+[node name="MulliganPanel" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner" unique_id=327740262]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -362,44 +549,42 @@ offset_right = 280.0
 offset_bottom = 140.0
 grow_horizontal = 2
 grow_vertical = 2
+theme_override_styles/panel = SubResource("StyleBox_dbg_mulligan")
+
+[node name="MulliganVBox" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/MulliganPanel" unique_id=391082377]
+layout_mode = 2
 theme_override_constants/separation = 10
 alignment = 1
 
-[node name="MulliganHint" type="Label" parent="Margin/VBox/BattleRoot/MulliganPanel"]
+[node name="MulliganHint" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/MulliganPanel/MulliganVBox" unique_id=1732031611]
 layout_mode = 2
+text = "Mulligan once: all five cards back, shuffle, redraw five."
 horizontal_alignment = 1
 autowrap_mode = 3
-text = "Mulligan once: all five cards back, shuffle, redraw five."
 
-[node name="MulliganFanHost" type="Control" parent="Margin/VBox/BattleRoot/MulliganPanel"]
-custom_minimum_size = Vector2(0, 120)
-layout_mode = 2
-
-[node name="MulliganHandRow" type="Control" parent="Margin/VBox/BattleRoot/MulliganPanel/MulliganFanHost"]
+[node name="MulliganHandRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/MulliganPanel/MulliganVBox" unique_id=306108795]
 unique_name_in_owner = true
-layout_mode = 1
-anchors_preset = 15
-anchor_right = 1.0
-anchor_bottom = 1.0
-grow_horizontal = 2
-grow_vertical = 2
-
-[node name="MulliganRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/MulliganPanel"]
 layout_mode = 2
-alignment = 1
+size_flags_horizontal = 3
 theme_override_constants/separation = 12
+alignment = 1
 
-[node name="MulliganYesButton" type="Button" parent="Margin/VBox/BattleRoot/MulliganPanel/MulliganRow"]
+[node name="MulliganRow" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/MulliganPanel/MulliganVBox" unique_id=1554009259]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="MulliganYesButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/MulliganPanel/MulliganVBox/MulliganRow" unique_id=290269462]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Mulligan"
 
-[node name="MulliganNoButton" type="Button" parent="Margin/VBox/BattleRoot/MulliganPanel/MulliganRow"]
+[node name="MulliganNoButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/MulliganPanel/MulliganVBox/MulliganRow" unique_id=1396995070]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Keep"
 
-[node name="EndedLabel" type="Label" parent="Margin/VBox/BattleRoot"]
+[node name="EndedLabel" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner" unique_id=1163512427]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -414,12 +599,12 @@ offset_right = 200.0
 offset_bottom = -8.0
 grow_horizontal = 2
 grow_vertical = 0
-theme_override_font_sizes/font_size = 14
 theme_override_colors/font_color = Color(0.85, 0.9, 0.55, 1)
+theme_override_font_sizes/font_size = 14
 horizontal_alignment = 1
 autowrap_mode = 3
 
-[node name="LogDrawer" type="Control" parent="Margin/VBox/BattleRoot"]
+[node name="LogDrawer" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner" unique_id=294072134]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 2
@@ -430,8 +615,12 @@ offset_top = -28.0
 offset_right = 320.0
 offset_bottom = -4.0
 grow_vertical = 0
+theme_override_styles/panel = SubResource("StyleBox_dbg_log")
 
-[node name="LogToggleButton" type="Button" parent="Margin/VBox/BattleRoot/LogDrawer"]
+[node name="LogDrawerInner" type="Control" parent="Margin/VBox/BattleRoot/BattleRootInner/LogDrawer" unique_id=799688415]
+layout_mode = 2
+
+[node name="LogToggleButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/LogDrawer/LogDrawerInner" unique_id=1013201069]
 unique_name_in_owner = true
 layout_mode = 1
 anchors_preset = 2
@@ -439,10 +628,10 @@ anchor_top = 1.0
 anchor_bottom = 1.0
 offset_top = -24.0
 offset_right = 110.0
-offset_bottom = 0.0
+grow_vertical = 0
 text = "▶ Log"
 
-[node name="LogScroll" type="ScrollContainer" parent="Margin/VBox/BattleRoot/LogDrawer"]
+[node name="LogScroll" type="ScrollContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/LogDrawer/LogDrawerInner" unique_id=1013461483]
 unique_name_in_owner = true
 visible = false
 layout_mode = 1
@@ -452,17 +641,17 @@ anchor_bottom = 1.0
 offset_top = -140.0
 offset_right = 300.0
 offset_bottom = -28.0
+grow_vertical = 0
 horizontal_scroll_mode = 0
 
-[node name="LogLabel" type="Label" parent="Margin/VBox/BattleRoot/LogDrawer/LogScroll"]
+[node name="LogLabel" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/LogDrawer/LogDrawerInner/LogScroll" unique_id=580244426]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 size_flags_horizontal = 3
-custom_minimum_size = Vector2(280, 0)
 autowrap_mode = 3
-text = ""
 
-[node name="SetupPanel" type="VBoxContainer" parent="Margin/VBox/BattleRoot"]
+[node name="SetupPanel" type="VBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner" unique_id=373847779]
 unique_name_in_owner = true
 visible = false
-layout_mode = 2
+layout_mode = 0
