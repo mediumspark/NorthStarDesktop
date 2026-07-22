@@ -38,8 +38,9 @@ func setup_card(
 	for c in get_children():
 		c.queue_free()
 
-	var normal := _stylebox(false)
-	var hover := _stylebox(true)
+	var targetable: bool = bool(opts.get("targetable", false))
+	var normal := _stylebox(false, targetable)
+	var hover := _stylebox(true, targetable)
 	add_theme_stylebox_override("normal", normal)
 	add_theme_stylebox_override("hover", hover)
 	add_theme_stylebox_override("pressed", hover)
@@ -68,10 +69,14 @@ func _on_button_pressed() -> void:
 		activated.emit()
 
 
-func _stylebox(bright: bool) -> StyleBoxFlat:
+func _stylebox(bright: bool, targetable: bool = false) -> StyleBoxFlat:
 	var sb := StyleBoxFlat.new()
 	sb.bg_color = Color(0, 0, 0, 0)
-	sb.border_color = Color(0.38, 0.42, 0.52, 0.6) if bright else Color(0, 0, 0, 0)
-	sb.set_border_width_all(2 if bright else 0)
+	if targetable:
+		sb.border_color = Color(0.95, 0.82, 0.25, 0.95) if bright else Color(0.85, 0.72, 0.18, 0.85)
+		sb.set_border_width_all(3 if bright else 2)
+	else:
+		sb.border_color = Color(0.38, 0.42, 0.52, 0.6) if bright else Color(0, 0, 0, 0)
+		sb.set_border_width_all(2 if bright else 0)
 	sb.set_corner_radius_all(8)
 	return sb

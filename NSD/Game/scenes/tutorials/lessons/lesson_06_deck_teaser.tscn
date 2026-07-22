@@ -1,0 +1,6 @@
+[gd_scene load_steps=2 format=3 uid="uid://tutl06deck"]
+
+[ext_resource type="PackedScene" path="res://scenes/tutorials/lesson_common.tscn" id="1_common"]
+
+[node name="Lesson06DeckTeaser" instance=ExtResource("1_common")]
+lesson_id = "deck_teaser"

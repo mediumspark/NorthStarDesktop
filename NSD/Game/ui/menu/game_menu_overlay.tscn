@@ -1,0 +1,123 @@
+[gd_scene load_steps=5 format=3 uid="uid://gamemenuoverlay01"]
+
+[ext_resource type="Script" path="res://ui/menu/game_menu_overlay.gd" id="1_script"]
+[ext_resource type="Theme" path="res://ui/deck_building_theme.tres" id="2_theme"]
+[ext_resource type="StyleBoxFlat" path="res://ui/deck_tile_style.tres" id="3_style"]
+[ext_resource type="PackedScene" path="res://ui/menu/game_settings_panel.tscn" id="4_settings"]
+
+[node name="GameMenuOverlay" type="CanvasLayer"]
+script = ExtResource("1_script")
+
+[node name="Backdrop" type="ColorRect" parent="."]
+unique_name_in_owner = true
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 0
+color = Color(0.02, 0.025, 0.04, 0.72)
+
+[node name="Center" type="CenterContainer" parent="."]
+anchors_preset = 15
+anchor_right = 1.0
+anchor_bottom = 1.0
+grow_horizontal = 2
+grow_vertical = 2
+mouse_filter = 2
+
+[node name="PausePanel" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(320, 0)
+layout_mode = 2
+theme = ExtResource("2_theme")
+theme_override_styles/panel = ExtResource("3_style")
+
+[node name="Margin" type="MarginContainer" parent="Center/PausePanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="VBox" type="VBoxContainer" parent="Center/PausePanel/Margin"]
+layout_mode = 2
+theme_override_constants/separation = 10
+
+[node name="PauseTitle" type="Label" parent="Center/PausePanel/Margin/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_font_sizes/font_size = 24
+text = "Paused"
+horizontal_alignment = 1
+
+[node name="ResumeButton" type="Button" parent="Center/PausePanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+text = "Resume"
+
+[node name="SettingsButton" type="Button" parent="Center/PausePanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+text = "Settings"
+
+[node name="SurrenderButton" type="Button" parent="Center/PausePanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+text = "Surrender / Quit to Menu"
+
+[node name="ExitGameButton" type="Button" parent="Center/PausePanel/Margin/VBox"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(260, 0)
+layout_mode = 2
+text = "Exit Game"
+
+[node name="SettingsPanel" parent="Center" instance=ExtResource("4_settings")]
+unique_name_in_owner = true
+layout_mode = 2
+
+[node name="ConfirmPanel" type="PanelContainer" parent="Center"]
+unique_name_in_owner = true
+visible = false
+custom_minimum_size = Vector2(360, 0)
+layout_mode = 2
+theme = ExtResource("2_theme")
+theme_override_styles/panel = ExtResource("3_style")
+
+[node name="ConfirmMargin" type="MarginContainer" parent="Center/ConfirmPanel"]
+layout_mode = 2
+theme_override_constants/margin_left = 24
+theme_override_constants/margin_top = 20
+theme_override_constants/margin_right = 24
+theme_override_constants/margin_bottom = 20
+
+[node name="ConfirmVBox" type="VBoxContainer" parent="Center/ConfirmPanel/ConfirmMargin"]
+layout_mode = 2
+theme_override_constants/separation = 14
+
+[node name="ConfirmMessage" type="Label" parent="Center/ConfirmPanel/ConfirmMargin/ConfirmVBox"]
+unique_name_in_owner = true
+layout_mode = 2
+text = "Are you sure?"
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="ConfirmButtons" type="HBoxContainer" parent="Center/ConfirmPanel/ConfirmMargin/ConfirmVBox"]
+layout_mode = 2
+theme_override_constants/separation = 12
+alignment = 1
+
+[node name="ConfirmYesButton" type="Button" parent="Center/ConfirmPanel/ConfirmMargin/ConfirmVBox/ConfirmButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "Yes"
+
+[node name="ConfirmNoButton" type="Button" parent="Center/ConfirmPanel/ConfirmMargin/ConfirmVBox/ConfirmButtons"]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(120, 0)
+layout_mode = 2
+text = "No"

@@ -8,7 +8,10 @@ const _MatchAnimationOverlay := preload("res://ui/match/match_animation_overlay.
 const _MatchHud := preload("res://ui/match/match_hud.gd")
 const _MatchLayout := preload("res://ui/match/match_layout.gd")
 const _MatchHandFan := preload("res://ui/match/match_hand_fan.gd")
+const _MatchTargetPicker := preload("res://ui/match/match_target_picker.gd")
 const CPU_SETUP_CARD_DELAY := 0.35
+
+signal _target_pick_completed(index: int)
 
 var _tables_data: Dictionary = {}
 var _catalog_ready: bool = false
@@ -24,9 +27,16 @@ var _cpu_anim_visible_count: int = 0
 var _pending_game_over: String = ""
 var _log_expanded: bool = false
 var _banner_tween: Tween
+var _target_picker: MatchTargetPicker
+
+
+func _game_menu() -> Node:
+	return get_node("/root/GameMenu")
 
 
 func _ready() -> void:
+	var menu := _game_menu()
+	menu.register_context(menu.Context.IN_MATCH, _back_to_menu_task, _can_surrender)
 	%BackButton.pressed.connect(_on_back_pressed)
 	%LogToggleButton.pressed.connect(_on_log_toggle_pressed)
 	%MulliganYesButton.pressed.connect(_on_mulligan_yes)
@@ -51,6 +61,14 @@ func _ready() -> void:
 		)
 		return
 	SupabaseClient.fetch_all_tables()
+
+
+func _exit_tree() -> void:
+	_game_menu().clear_context()
+
+
+func _can_surrender() -> bool:
+	return not _cpu_setup_animating and not _faceoff_animating
 
 
 func _viewport_size() -> Vector2:
@@ -591,6 +609,10 @@ func _refresh_setup_ui() -> void:
 		_match.get_influence(MatchState.P_HUMAN),
 		base_inf,
 	]
+	%CenterInfluenceLabel.text = "CPU %s   |   You %s" % [
+		%CpuInfluenceLabel.text,
+		%InfluenceLabel.text,
+	]
 	if _cpu_setup_animating:
 		pass
 	elif pending:
@@ -674,7 +696,9 @@ func _layout_hand_fan(retry: bool = false) -> void:
 	if spread < 8.0:
 		spread = dock.size.x
 	var inner: Control = %BattleRootInner
-	var apex_local_x := inner.global_position.x + inner.size.x * 0.5 - %HandRow.global_position.x
+	var apex_local_x: float = (
+		inner.global_position.x + inner.size.x * 0.5 - %HandRow.global_position.x
+	)
 	if not _MatchHandFan.apply_to(
 		%HandRow,
 		spread,
@@ -862,6 +886,51 @@ func _on_reveal_faceoff() -> void:
 	_run_faceoff_anim()
 
 
+func _ensure_target_picker() -> MatchTargetPicker:
+	if _target_picker != null:
+		return _target_picker
+	_target_picker = _MatchTargetPicker.attach(self)
+	if not _target_picker.candidate_chosen.is_connected(_on_target_candidate_chosen):
+		_target_picker.candidate_chosen.connect(_on_target_candidate_chosen)
+	return _target_picker
+
+
+func _pick_faceoff_target(request: Dictionary) -> int:
+	_ensure_preview()
+	_ensure_match_overlay()
+	var prompt := str(request.get("prompt", "Choose a target."))
+	var candidates: Array = request.get("candidates", []) as Array
+	_match_overlay.enter_target_mode(prompt)
+	_show_status_banner(prompt, 0.0)
+	var picker := _ensure_target_picker()
+	picker.show_candidates(prompt, candidates, _resolve_row, _hand_opts(), _preview)
+	var chosen: int = await _target_pick_completed
+	picker.hide_picker()
+	_match_overlay.exit_target_mode()
+	return chosen
+
+
+func _on_target_candidate_chosen(index: int) -> void:
+	_target_pick_completed.emit(index)
+
+
+func _drain_pending_targets(slot: int = -1) -> void:
+	while _match.has_pending_target():
+		var pick: int = await _pick_faceoff_target(_match.get_pending_target())
+		var sub: Dictionary = _match.submit_target(pick)
+		if not bool(sub.get("ok", false)):
+			_append_log(str(sub.get("error", "Target failed.")))
+			break
+	if slot >= 0:
+		return
+	while true:
+		var cont: Dictionary = _match.continue_faceoff_after_target()
+		if bool(cont.get("waiting_target", false)) or _match.has_pending_target():
+			await _drain_pending_targets()
+			continue
+		break
+
+
 func _run_faceoff_anim() -> void:
 	if _match == null or _faceoff_animating or _cpu_setup_animating:
 		return
@@ -871,9 +940,9 @@ func _run_faceoff_anim() -> void:
 	_pending_game_over = ""
 	%RevealFaceoffButton.disabled = true
 	_ensure_match_overlay()
-	var human_line: Array = _match.get_setup_line(MatchState.P_HUMAN)
-	var cpu_line: Array = _match.get_setup_line(MatchState.P_CPU)
-	var slot_count := maxi(human_line.size(), cpu_line.size())
+	_match.set_auto_resolve_targets(false)
+	var begin_r: Dictionary = _match.begin_faceoff_resolution()
+	var slot_count := int(begin_r.get("slots", 0))
 	await _match_overlay.play_faceoff_intro()
 	_rebuild_both_lines_revealed(-1)
 	for slot in range(slot_count):
@@ -885,14 +954,33 @@ func _run_faceoff_anim() -> void:
 			str(names.get("human", "—")),
 			str(names.get("cpu", "—"))
 		)
-	var r := _match.resolve_faceoff()
-	if not bool(r.get("ok", false)):
-		_append_log(str(r.get("error", "Reveal failed.")))
-		_match_overlay.dismiss()
-		_faceoff_animating = false
-		%RevealFaceoffButton.disabled = false
-		_refresh_all_ui()
-		return
+		while true:
+			var r: Dictionary = _match.resolve_faceoff_slot(slot)
+			if bool(r.get("waiting_target", false)) or _match.has_pending_target():
+				await _drain_pending_targets(slot)
+				if _match.has_pending_target():
+					continue
+				r = _match.resolve_faceoff_slot(slot)
+			if not bool(r.get("waiting_target", false)):
+				break
+	while true:
+		var fin: Dictionary = _match.finalize_faceoff_resolution()
+		if bool(fin.get("waiting_target", false)) or _match.has_pending_target():
+			await _drain_pending_targets()
+			if _match.has_pending_target():
+				continue
+			fin = _match.finalize_faceoff_resolution()
+		if not bool(fin.get("ok", false)):
+			_append_log(str(fin.get("error", "Reveal failed.")))
+			_match.set_auto_resolve_targets(true)
+			_match_overlay.dismiss()
+			_faceoff_animating = false
+			%RevealFaceoffButton.disabled = false
+			_refresh_all_ui()
+			return
+		if not bool(fin.get("waiting_target", false)):
+			break
+	_match.set_auto_resolve_targets(true)
 	await _match_overlay.play_faceoff_result(_match.get_last_faceoff_summary())
 	_match_overlay.dismiss()
 	_faceoff_animating = false

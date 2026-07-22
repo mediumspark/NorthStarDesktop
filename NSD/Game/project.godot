@@ -19,6 +19,14 @@ config/icon="res://icon.svg"
 
 SupabaseClient="*res://autoload/supabase_client.gd"
 GameAuthApi="*res://autoload/game_auth_api.gd"
+GameSettings="*res://autoload/game_settings.gd"
+GameMenu="*res://autoload/game_menu.gd"
+
+[display]
+
+window/size/viewport_width=1920
+window/size/viewport_height=1080
+window/size/mode=3
 
 [physics]
 

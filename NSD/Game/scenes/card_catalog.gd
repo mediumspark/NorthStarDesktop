@@ -2,18 +2,31 @@ extends Control
 
 const SCENE_MAIN_MENU := "res://scenes/main_menu.tscn"
 
+const CARD_TILE_W := 132.0
+const CARD_TILE_H := 218.0
+const CATALOG_GRID_COLUMNS := 4
+
 @onready var _status: Label = %StatusLabel
 @onready var _tabs: TabContainer = %TabContainer
 
-var _row_boxes: Dictionary = {}  # table_name -> VBoxContainer
+var _preview: CardPreviewSidebar
+
+var _row_boxes: Dictionary = {}  # table_name -> GridContainer
 var _counts: Dictionary = {}  # table_name -> int (-1 = error)
 
 
+func _game_menu() -> Node:
+	return get_node("/root/GameMenu")
+
+
 func _ready() -> void:
+	var menu := _game_menu()
+	menu.register_context(menu.Context.SCREEN)
 	%MainMenuButton.pressed.connect(_on_main_menu_pressed)
 	_build_tabs()
 	SupabaseClient.batch_progress.connect(_on_batch_progress)
 	SupabaseClient.batch_finished.connect(_on_batch_finished)
+	call_deferred("_ensure_preview")
 	if SupabaseClient.load_catalog_from_cache():
 		return
 	if not SupabaseClient.load_config():
@@ -21,6 +34,16 @@ func _ready() -> void:
 		return
 	_status.text = "Fetching…"
 	SupabaseClient.fetch_all_tables()
+
+
+func _exit_tree() -> void:
+	_game_menu().clear_context()
+
+
+func _ensure_preview() -> void:
+	if _preview != null:
+		return
+	_preview = CardPreviewSidebar.attach_to_host(self, $Margin)
 
 
 func _on_main_menu_pressed() -> void:
@@ -33,16 +56,18 @@ func _build_tabs() -> void:
 		scroll.name = SupabaseClient.TABLE_LABELS[table]
 		scroll.size_flags_vertical = Control.SIZE_EXPAND_FILL
 		scroll.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		var vbox := VBoxContainer.new()
-		vbox.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-		vbox.add_theme_constant_override("separation", 12)
-		scroll.add_child(vbox)
+		var grid := GridContainer.new()
+		grid.columns = CATALOG_GRID_COLUMNS
+		grid.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+		grid.add_theme_constant_override("h_separation", 10)
+		grid.add_theme_constant_override("v_separation", 10)
+		scroll.add_child(grid)
 		_tabs.add_child(scroll)
-		_row_boxes[table] = vbox
+		_row_boxes[table] = grid
 
 
 func _on_batch_progress(table_name: String, ok: bool, rows: Array, err_msg: String) -> void:
-	var box: VBoxContainer = _row_boxes[table_name]
+	var box: GridContainer = _row_boxes[table_name]
 	if not ok:
 		_counts[table_name] = -1
 		var err_label := Label.new()
@@ -74,33 +99,27 @@ func _on_batch_finished() -> void:
 
 
 func _make_expandable_row(table_name: String, row: Dictionary) -> Control:
+	_ensure_preview()
 	var root := VBoxContainer.new()
-	root.size_flags_horizontal = Control.SIZE_EXPAND_FILL
 	root.add_theme_constant_override("separation", 4)
 
-	var title := DeckRules.display_name_for_row(table_name, row)
-	var btn := Button.new()
-	btn.flat = true
-	btn.alignment = HORIZONTAL_ALIGNMENT_LEFT
-	btn.focus_mode = Control.FOCUS_NONE
-	btn.set_meta("card_title", title)
-	btn.text = "▶ %s" % title
-	btn.size_flags_horizontal = Control.SIZE_EXPAND_FILL
-
+	var opts := {"display_w": CARD_TILE_W, "display_h": CARD_TILE_H}
+	var tile := CardTileButton.new()
 	var details := Label.new()
 	details.text = _row_to_text(row)
 	details.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
 	details.visible = false
 	details.size_flags_horizontal = Control.SIZE_EXPAND_FILL
+	details.add_theme_font_size_override("font_size", 10)
+	details.modulate = Color(0.82, 0.85, 0.92)
 
-	btn.pressed.connect(func () -> void:
+	tile.setup_card(table_name, row, opts, func () -> void:
 		details.visible = not details.visible
-		var open := details.visible
-		var t: String = str(btn.get_meta("card_title"))
-		btn.text = ("▼ %s" % t) if open else ("▶ %s" % t)
 	)
+	tile.set_tooltip("Click to magnify; toggles raw fields below.")
+	CardPreviewSidebar.wire_tile(tile, _preview)
 
-	root.add_child(btn)
+	root.add_child(tile)
 	root.add_child(details)
 	return root
 

@@ -14,6 +14,9 @@ const SCENE_PATH := "res://ui/match/match_animation_overlay.tscn"
 @onready var _vs_label: Label = %VsLabel
 @onready var _result_banner: Label = %ResultBanner
 
+var _in_target_mode: bool = false
+var _saved_backdrop_mouse_filter: Control.MouseFilter = Control.MOUSE_FILTER_STOP
+
 
 func _ready() -> void:
 	layer = 90
@@ -173,11 +176,48 @@ func play_game_over(result: String) -> void:
 
 
 func dismiss() -> void:
+	if _in_target_mode:
+		exit_target_mode()
 	visible = false
 	_reset_visuals()
 
 
+## Faceoff pauses for human target selection — backdrop stops eating clicks.
+func enter_target_mode(prompt: String) -> void:
+	if not visible:
+		visible = true
+		_backdrop.modulate.a = 1.0
+	_in_target_mode = true
+	_saved_backdrop_mouse_filter = _backdrop.mouse_filter
+	_backdrop.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_panel.visible = false
+	_panel.mouse_filter = Control.MOUSE_FILTER_IGNORE
+	_title.text = "CHOOSE TARGET"
+	_title.visible = true
+	_subtitle.text = prompt
+	_subtitle.visible = true
+	_you_score.visible = false
+	_cpu_score.visible = false
+	_vs_label.visible = false
+	_result_banner.visible = false
+
+
+func exit_target_mode() -> void:
+	if not _in_target_mode:
+		return
+	_in_target_mode = false
+	_backdrop.mouse_filter = _saved_backdrop_mouse_filter
+	_panel.visible = true
+	_panel.mouse_filter = Control.MOUSE_FILTER_STOP
+	_you_score.visible = true
+	_cpu_score.visible = true
+	_vs_label.visible = true
+	_title.text = "FACE OFF"
+	_subtitle.text = "Revealing cards left to right…"
+
+
 func _reset_visuals() -> void:
+	_in_target_mode = false
 	_backdrop.modulate = Color(1, 1, 1, 1)
 	_backdrop.color = Color(0.02, 0.025, 0.04, 0.78)
 	_panel.modulate = Color(1, 1, 1, 1)

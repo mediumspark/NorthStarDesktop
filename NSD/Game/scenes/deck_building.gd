@@ -4,14 +4,12 @@ const SCENE_MAIN_MENU := "res://scenes/main_menu.tscn"
 ## Shipped sample loadout (proto IDs). Resolves to real names when catalog is synced.
 const BUNDLED_DEMO_LOADOUT := "res://data/bundled_sample_loadout.json"
 
-const DECK_TILE_STYLE: StyleBoxFlat = preload("res://ui/deck_tile_style.tres")
+const CARD_OPTS := {"display_w": 132.0, "display_h": 218.0}
 
 const COLOR_VALID := Color(0.32, 0.72, 0.42, 1)
 const COLOR_INVALID := Color(0.82, 0.35, 0.32, 1)
 const COLOR_NEUTRAL := Color(0.88, 0.9, 0.93, 1)
 const COLOR_WARN := Color(0.9, 0.62, 0.28, 1)
-
-const TILE_MIN := Vector2(240, 56)
 
 @onready var _catalog_summary: Label = %CatalogSummaryLabel
 @onready var _validation: Label = %ValidationLabel
@@ -45,13 +43,16 @@ var _chef_ids: Array = []
 var _catalog_ready: bool = false
 var _catalog_summary_text: String = ""
 
-var _tile_style_hover: StyleBoxFlat
+var _preview: CardPreviewSidebar
+
+
+func _game_menu() -> Node:
+	return get_node("/root/GameMenu")
 
 
 func _ready() -> void:
-	_tile_style_hover = DECK_TILE_STYLE.duplicate() as StyleBoxFlat
-	_tile_style_hover.bg_color = _tile_style_hover.bg_color.lightened(0.09)
-
+	var menu := _game_menu()
+	menu.register_context(menu.Context.SCREEN)
 	_toast_timer.timeout.connect(_on_toast_timeout)
 	_catalog_summary.text = ""
 	_toast.text = ""
@@ -70,6 +71,7 @@ func _ready() -> void:
 	_show_support.toggled.connect(_on_filters_changed)
 	_show_restaurant.toggled.connect(_on_filters_changed)
 	_show_chef.toggled.connect(_on_filters_changed)
+	call_deferred("_ensure_preview")
 
 	_tables_data.clear()
 	_set_validation("Loading catalog…", false, true)
@@ -85,6 +87,12 @@ func _ready() -> void:
 		return
 	_set_validation("Fetching catalog…", false, true)
 	SupabaseClient.fetch_all_tables()
+
+
+func _ensure_preview() -> void:
+	if _preview != null:
+		return
+	_preview = CardPreviewSidebar.attach_to_host(self, $Margin)
 
 
 func _on_toast_timeout() -> void:
@@ -188,37 +196,38 @@ func _tooltip_for_catalog_table(table: String) -> String:
 	return "Add card"
 
 
-func _apply_tile_button_style(btn: Button) -> void:
-	btn.add_theme_stylebox_override("normal", DECK_TILE_STYLE)
-	btn.add_theme_stylebox_override("hover", _tile_style_hover)
-	btn.add_theme_stylebox_override("pressed", DECK_TILE_STYLE)
-	btn.add_theme_stylebox_override("focus", DECK_TILE_STYLE)
+func _make_catalog_tile_button(table: String, id_str: String, row: Dictionary) -> CardTileButton:
+	_ensure_preview()
+	var tile := CardTileButton.new()
+	tile.setup_card(table, row, CARD_OPTS, _on_card_tile_pressed.bind(table, id_str))
+	tile.set_tooltip(_tooltip_for_catalog_table(table))
+	CardPreviewSidebar.wire_tile(tile, _preview)
+	return tile
 
 
-func _make_catalog_tile_button(table: String, id_str: String, row: Dictionary) -> Button:
-	var btn := Button.new()
-	btn.custom_minimum_size = TILE_MIN
-	btn.clip_text = true
-	btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	btn.text = "%s\n%s" % [SupabaseClient.TABLE_LABELS.get(table, table), DeckRules.display_name_for_row(table, row)]
-	btn.tooltip_text = _tooltip_for_catalog_table(table)
-	btn.pressed.connect(_on_card_tile_pressed.bind(table, id_str))
-	_apply_tile_button_style(btn)
-	return btn
+func _make_deck_row_button(table: String, id_str: String, remove_tooltip: String, on_pressed: Callable) -> CardTileButton:
+	_ensure_preview()
+	var row := _resolve_row(table, id_str)
+	if row.is_empty():
+		row = {"name": id_str}
+	var tile := CardTileButton.new()
+	tile.setup_card(table, row, CARD_OPTS, on_pressed)
+	tile.set_tooltip(remove_tooltip)
+	CardPreviewSidebar.wire_tile(tile, _preview)
+	return tile
 
 
-func _make_deck_row_button(line: String, remove_tooltip: String, on_pressed: Callable) -> Button:
-	var btn := Button.new()
-	btn.custom_minimum_size = TILE_MIN
-	btn.clip_text = true
-	btn.text_overrun_behavior = TextServer.OVERRUN_TRIM_ELLIPSIS
-	btn.autowrap_mode = TextServer.AUTOWRAP_WORD_SMART
-	btn.text = line
-	btn.tooltip_text = remove_tooltip
-	btn.pressed.connect(on_pressed)
-	_apply_tile_button_style(btn)
-	return btn
+func _resolve_row(table: String, id_str: String) -> Dictionary:
+	var rows: Variant = _tables_data.get(table, [])
+	if typeof(rows) != TYPE_ARRAY:
+		return {}
+	for item in rows:
+		if typeof(item) != TYPE_DICTIONARY:
+			continue
+		var r: Dictionary = item
+		if DeckRules.row_id(r) == id_str:
+			return r
+	return {}
 
 
 func _rebuild_all_cards_grid() -> void:
@@ -269,19 +278,6 @@ func _try_autoload() -> void:
 		return
 	if _load_from_disk(false):
 		_toast_msg("Auto-loaded valid save from disk.")
-
-
-func _card_label(table: String, id_str: String) -> String:
-	var rows: Variant = _tables_data.get(table, [])
-	if typeof(rows) != TYPE_ARRAY:
-		return id_str
-	for row in rows:
-		if typeof(row) != TYPE_DICTIONARY:
-			continue
-		var r: Dictionary = row
-		if DeckRules.row_id(r) == id_str:
-			return "%s — %s" % [SupabaseClient.TABLE_LABELS.get(table, table), DeckRules.display_name_for_row(table, r)]
-	return "%s — %s" % [SupabaseClient.TABLE_LABELS.get(table, table), id_str]
 
 
 func _build_chef_option() -> void:
@@ -379,8 +375,7 @@ func _refresh_main_deck_list() -> void:
 		var table := str(e.get("table", ""))
 		var id_str := str(e.get("id", ""))
 		var idx := i
-		var line := _card_label(table, id_str)
-		var btn := _make_deck_row_button(line, "Remove from main deck", func () -> void:
+		var btn := _make_deck_row_button(table, id_str, "Remove from main deck", func () -> void:
 			_remove_main_at(idx)
 		)
 		_main_deck_list.add_child(btn)
@@ -427,8 +422,7 @@ func _refresh_restaurant_deck_list() -> void:
 		var e: Dictionary = _restaurant_deck[i]
 		var id_str := str(e.get("id", ""))
 		var idx := i
-		var line := _card_label(DeckRules.RESTAURANT_TABLE, id_str)
-		var btn := _make_deck_row_button(line, "Remove from restaurant deck", func () -> void:
+		var btn := _make_deck_row_button(DeckRules.RESTAURANT_TABLE, id_str, "Remove from restaurant deck", func () -> void:
 			_remove_restaurant_at(idx)
 		)
 		_rest_deck_list.add_child(btn)
@@ -562,6 +556,10 @@ func _clone_entry_array(src: Variant) -> Array:
 func _on_load_pressed() -> void:
 	if _load_from_disk(true):
 		_toast_msg("Loaded valid save from %s." % DeckRules.LOADOUT_PATH)
+
+
+func _exit_tree() -> void:
+	_game_menu().clear_context()
 
 
 func _on_back_pressed() -> void:

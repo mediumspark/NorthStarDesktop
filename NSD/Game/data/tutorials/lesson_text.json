@@ -1,0 +1,110 @@
+{
+  "hub": {
+    "title": "Tutorials",
+    "blurb": "Short playable lessons. No synced catalog required. Complete any lesson to mark it done on this device."
+  },
+  "lessons": [
+    {
+      "id": "goal_zones",
+      "title": "1 — Goal & zones",
+      "scene": "res://scenes/tutorials/lessons/lesson_01_goal_zones.tscn",
+      "steps": [
+        {
+          "title": "Win condition",
+          "body": "[b]North Star[/b] is a competitive card game. Your long-term goal is to earn [b]5 stars[/b] for your restaurant before your opponent does.\n\nStars usually come from winning [b]Faceoffs[/b] (we cover that in a later lesson)."
+        },
+        {
+          "title": "Three piles",
+          "body": "You bring three things to a match:\n\n• [b]Chef[/b] — sets your baseline [b]influence[/b] each round and which restaurant types fit your plan.\n• [b]Restaurant deck[/b] — several restaurant cards; you will pick one to run during the match.\n• [b]Main deck[/b] — staff, meals, events, and support that you draw and play during rounds."
+        },
+        {
+          "title": "Check",
+          "body": "Which pile gives you your baseline influence each Setup round?\n\nPick [b]Chef[/b] when you are ready to continue."
+        }
+      ]
+    },
+    {
+      "id": "restaurant_pick",
+      "title": "2 — Starting restaurant",
+      "scene": "res://scenes/tutorials/lessons/lesson_02_restaurant_pick.tscn",
+      "steps": [
+        {
+          "title": "Before the match",
+          "body": "After shuffling your [b]restaurant deck[/b], you may look at the [b]top[/b] and [b]bottom[/b] cards. Pick one to be your [b]active restaurant[/b] for the game (unless an effect swaps it later)."
+        },
+        {
+          "title": "Try it",
+          "body": "Below are two sample restaurants. Choose [b]Top[/b] or [b]Bottom[/b]. Your choice only affects this lesson."
+        }
+      ]
+    },
+    {
+      "id": "mulligan",
+      "title": "3 — Mulligan",
+      "scene": "res://scenes/tutorials/lessons/lesson_03_mulligan.tscn",
+      "steps": [
+        {
+          "title": "Opening hand",
+          "body": "You start with [b]5[/b] cards. Before the first round begins, you may take [b]one[/b] mulligan: [b]all five[/b] cards go back, you shuffle, and you draw a fresh five. You cannot mulligan individual cards."
+        },
+        {
+          "title": "Practice",
+          "body": "Tap [b]Mulligan all[/b] to return all five and redraw, or [b]Keep hand[/b] to continue. This uses a tiny demo deck in memory only."
+        }
+      ]
+    },
+    {
+      "id": "setup",
+      "title": "4 — Setup phase",
+      "scene": "res://scenes/tutorials/lessons/lesson_04_setup.tscn",
+      "steps": [
+        {
+          "title": "Simultaneous setup",
+          "body": "Each [b]Setup[/b], you draw up to at least [b]5[/b] cards, then you may [b]set[/b] cards face-down in a line up to your [b]influence[/b]. You must fix illegal placements before you lock — the game will not let you lock an illegal board."
+        },
+        {
+          "title": "Food & support",
+          "body": "[b]Meals (food)[/b] can be set face-down in your line during Setup like other cards (they attach to your restaurant when revealed in Faceoff, up to [b]3[/b] foods). [b]Support[/b] is not set in the line — you play it from hand when rules allow."
+        },
+        {
+          "title": "Try it",
+          "body": "Spend influence to add [b]Staff[/b], [b]Meal[/b], or [b]Event[/b] from your demo hand. [b]Support[/b] stays disabled here on purpose. Remove the last placed card if you need to adjust."
+        }
+      ]
+    },
+    {
+      "id": "faceoff",
+      "title": "5 — Faceoff & stars",
+      "scene": "res://scenes/tutorials/lessons/lesson_05_faceoff.tscn",
+      "steps": [
+        {
+          "title": "Reveal order",
+          "body": "In a Faceoff, hidden cards reveal [b]left to right[/b]. Meal cards you placed can attach to your restaurant (up to [b]3[/b] foods). Your score is [b]base restaurant rating[/b] plus [b]food ratings[/b] from attached meals."
+        },
+        {
+          "title": "Stars",
+          "body": "Higher total wins the Faceoff and gains a star. On a [b]tie[/b], [b]both[/b] players gain a star. If both hit [b]5+[/b] stars on the same update, the match is a [b]draw[/b]. Stars can go down from effects and never below [b]0[/b]."
+        },
+        {
+          "title": "Demo totals",
+          "body": "Press [b]Show demo scores[/b] to compare two sample boards using the same rating fields as the desktop sim."
+        }
+      ]
+    },
+    {
+      "id": "deck_teaser",
+      "title": "6 — Deck building teaser",
+      "scene": "res://scenes/tutorials/lessons/lesson_06_deck_teaser.tscn",
+      "steps": [
+        {
+          "title": "Deck rules",
+          "body": "From the main menu, open [b]Deck building[/b] to build a legal loadout:\n\n• Main deck: exactly [b]30[/b] cards from staff / meal / event / support, max [b]3[/b] copies of the same card.\n• Restaurant deck: [b]3–10[/b] unique restaurants.\n• One chef.\n\nCPU matches also check chef vs restaurant types using catalog fields."
+        },
+        {
+          "title": "Next step",
+          "body": "When you are comfortable, try [b]CPU matches[/b] with a saved deck. Good luck!"
+        }
+      ]
+    }
+  ]
+}

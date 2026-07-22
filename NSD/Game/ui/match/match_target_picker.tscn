@@ -1,0 +1,47 @@
+[gd_scene format=3 uid="uid://bi36lc1vrmv7m"]
+
+[ext_resource type="Script" path="res://ui/match/match_target_picker.gd" id="1_script"]
+[ext_resource type="StyleBoxFlat" path="res://ui/deck_tile_style.tres" id="2_style"]
+
+[node name="MatchTargetPicker" type="CanvasLayer"]
+layer = 95
+script = ExtResource("1_script")
+
+[node name="Panel" type="PanelContainer" parent="."]
+unique_name_in_owner = true
+anchors_preset = 12
+anchor_top = 1.0
+anchor_right = 1.0
+anchor_bottom = 1.0
+offset_left = 12.0
+offset_top = -228.0
+offset_right = -12.0
+offset_bottom = -8.0
+grow_horizontal = 2
+grow_vertical = 0
+mouse_filter = 0
+theme_override_styles/panel = ExtResource("2_style")
+
+[node name="VBox" type="VBoxContainer" parent="Panel"]
+layout_mode = 2
+theme_override_constants/separation = 8
+
+[node name="PromptLabel" type="Label" parent="Panel/VBox"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.95, 0.82, 0.25, 1)
+theme_override_font_sizes/font_size = 16
+text = "Choose a target."
+horizontal_alignment = 1
+autowrap_mode = 3
+
+[node name="Scroll" type="ScrollContainer" parent="Panel/VBox"]
+layout_mode = 2
+custom_minimum_size = Vector2(0, 150)
+horizontal_scroll_mode = 2
+vertical_scroll_mode = 0
+
+[node name="CandidateRow" type="HBoxContainer" parent="Panel/VBox/Scroll"]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_constants/separation = 10

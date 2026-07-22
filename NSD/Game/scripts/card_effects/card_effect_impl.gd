@@ -101,13 +101,7 @@ static func on_reveal(fx: CardEffectBase, ctx: MatchEffectContext, owner: int, s
 			ctx.silenced_restaurant[ctx.opponent(owner)] = true
 			ctx.log("Opposing restaurant silenced this round.")
 		"PROTOMBSSUPP064":
-			if not ctx.foods[owner].is_empty():
-				var meal: Dictionary = ctx.foods[owner].pop_back()
-				ctx.match_ref.get_hand(owner) # ensure array exists
-				var h: Array = ctx.match_ref.get_hand(owner)
-				h.append({"table": "meal_cards", "id": DeckRules.row_id(meal)})
-				ctx.match_ref.set_hand(owner, h)
-				ctx.log("%s returned a meal to hand." % ctx.player_name(owner))
+			_return_meal_to_hand(ctx, owner)
 		"PROTOMBSSUPP061":
 			var h1 := ctx.rng.randi_range(0, 1) == 1
 			var h2 := ctx.rng.randi_range(0, 1) == 1
@@ -153,23 +147,10 @@ static func before_score(fx: CardEffectBase, ctx: MatchEffectContext, owner: int
 			ctx.log("%s: Bevs x%d." % [ctx.player_name(owner), mult])
 		"PROTOMBSSTAF050":
 			if CardEffectHelpers.only_staff_on_line(ctx, owner):
-				var hand: Array = ctx.match_ref.get_hand(owner)
-				if not hand.is_empty():
-					ctx.match_ref.discard_card(owner, hand[0])
-					hand.remove_at(0)
-					ctx.match_ref.set_hand(owner, hand)
-				if not ctx.foods[ctx.opponent(owner)].is_empty():
-					ctx.foods[ctx.opponent(owner)].pop_back()
-					ctx.log("%s trashed a hand card and removed opponent meal." % [ctx.player_name(owner)])
+				_begin_trash_hand_and_opponent_meal(ctx, owner)
 		"PROTOMBSSTAF051":
 			if CardEffectHelpers.only_staff_on_line(ctx, owner):
-				var hand: Array = ctx.match_ref.get_hand(owner)
-				if not hand.is_empty():
-					ctx.match_ref.discard_card(owner, hand[0])
-					hand.remove_at(0)
-					ctx.match_ref.set_hand(owner, hand)
-				ctx.add_score(owner, 3)
-				ctx.log("%s trashed a hand card to empower Bevs (+3)." % [ctx.player_name(owner)])
+				_begin_trash_hand_for_bev_bonus(ctx, owner)
 		"PROTOMBSMEAL033":
 			_double_tagged_meals(ctx, owner, "rib")
 		"PROTOMBSMEAL036":
@@ -236,21 +217,28 @@ static func _discard_celebrity_staff_after_slot(ctx: MatchEffectContext, owner: 
 
 
 static func _play_celebrity_from_hand_trash_rest(ctx: MatchEffectContext, owner: int) -> void:
+	var candidates := CardTarget.candidates_from_hand(ctx, owner, "staff_cards", "celebrity")
+	if candidates.is_empty():
+		return
+	CardEffectTargets.request(
+		ctx,
+		owner,
+		"Choose a celebrity staff to play from your hand.",
+		candidates,
+		func(chosen: Dictionary) -> void:
+			_finish_celebrity_from_hand_trash_rest(ctx, owner, chosen)
+	)
+
+
+static func _finish_celebrity_from_hand_trash_rest(ctx: MatchEffectContext, owner: int, chosen: Dictionary) -> void:
+	CardTarget.play_hand_card_to_setup_line(ctx, chosen)
 	var hand: Array = ctx.match_ref.get_hand(owner)
-	var kept: Array = []
-	var played := false
-	for card in hand:
+	for card in hand.duplicate():
 		if typeof(card) != TYPE_DICTIONARY:
 			continue
-		var d: Dictionary = card
-		if not played and str(d.get("table", "")) == "staff_cards" and CardTags.has_tag("staff_cards", ctx.card_row(d), "celebrity"):
-			ctx.match_ref.append_setup_line(owner, d)
-			played = true
-		else:
-			ctx.match_ref.discard_card(owner, d)
-	ctx.match_ref.set_hand(owner, kept if played else hand)
-	if played:
-		ctx.log("%s played a celebrity staff and trashed hand." % ctx.player_name(owner))
+		ctx.match_ref.discard_card(owner, card as Dictionary)
+	ctx.match_ref.set_hand(owner, [])
+	ctx.log("%s played a celebrity staff and trashed hand." % ctx.player_name(owner))
 
 
 static func _sum_hand_meal_tag_value(ctx: MatchEffectContext, player: int, tag: String) -> int:
@@ -391,15 +379,93 @@ static func cpu_hook(fx: CardEffectBase) -> String:
 
 
 static func _trade_food_discard(ctx: MatchEffectContext, owner: int) -> void:
-	var hand: Array = ctx.match_ref.get_hand(owner)
-	for i in range(hand.size()):
-		var d: Dictionary = hand[i]
-		if str(d.get("table", "")) != "meal_cards":
-			continue
-		ctx.match_ref.discard_card(owner, d)
-		hand.remove_at(i)
-		ctx.match_ref.set_hand(owner, hand)
-		if not ctx.foods[ctx.opponent(owner)].is_empty():
-			ctx.foods[ctx.opponent(owner)].pop_back()
-		ctx.log("%s traded a hand meal to discard opponent food." % ctx.player_name(owner))
+	var hand_meals := CardTarget.candidates_from_hand(ctx, owner, "meal_cards")
+	if hand_meals.is_empty():
 		return
+	CardEffectTargets.request(
+		ctx,
+		owner,
+		"Choose a meal from your hand to discard.",
+		hand_meals,
+		func(chosen: Dictionary) -> void:
+			_finish_trade_food_discard(ctx, owner, chosen)
+	)
+
+
+static func _finish_trade_food_discard(ctx: MatchEffectContext, owner: int, hand_meal: Dictionary) -> void:
+	CardTarget.apply_candidate(ctx, hand_meal)
+	var opp_foods := CardTarget.candidates_from_opponent_foods(ctx, owner)
+	if opp_foods.is_empty():
+		ctx.log("%s discarded a hand meal." % ctx.player_name(owner))
+		return
+	CardEffectTargets.request(
+		ctx,
+		owner,
+		"Choose an opponent meal to remove.",
+		opp_foods,
+		func(food: Dictionary) -> void:
+			CardTarget.apply_candidate(ctx, food)
+			ctx.log("%s traded a hand meal to discard opponent food." % ctx.player_name(owner))
+	)
+
+
+static func _return_meal_to_hand(ctx: MatchEffectContext, owner: int) -> void:
+	var candidates := CardTarget.candidates_from_foods(ctx, owner)
+	if candidates.is_empty():
+		return
+	CardEffectTargets.request(
+		ctx,
+		owner,
+		"Choose a meal in play to return to your hand.",
+		candidates,
+		func(chosen: Dictionary) -> void:
+			CardTarget.move_food_to_hand(ctx, chosen)
+			ctx.log("%s returned a meal to hand." % ctx.player_name(owner))
+	)
+
+
+static func _begin_trash_hand_and_opponent_meal(ctx: MatchEffectContext, owner: int) -> void:
+	var hand_cards := CardTarget.candidates_from_hand(ctx, owner)
+	if hand_cards.is_empty():
+		return
+	CardEffectTargets.request(
+		ctx,
+		owner,
+		"Choose a card from your hand to trash.",
+		hand_cards,
+		func(chosen: Dictionary) -> void:
+			_finish_trash_hand_and_opponent_meal(ctx, owner, chosen)
+	)
+
+
+static func _finish_trash_hand_and_opponent_meal(ctx: MatchEffectContext, owner: int, hand_card: Dictionary) -> void:
+	CardTarget.apply_candidate(ctx, hand_card)
+	var opp_foods := CardTarget.candidates_from_opponent_foods(ctx, owner)
+	if opp_foods.is_empty():
+		ctx.log("%s trashed a hand card." % ctx.player_name(owner))
+		return
+	CardEffectTargets.request(
+		ctx,
+		owner,
+		"Choose an opponent meal to trash.",
+		opp_foods,
+		func(food: Dictionary) -> void:
+			CardTarget.apply_candidate(ctx, food)
+			ctx.log("%s trashed a hand card and removed opponent meal." % ctx.player_name(owner))
+	)
+
+
+static func _begin_trash_hand_for_bev_bonus(ctx: MatchEffectContext, owner: int) -> void:
+	var hand_cards := CardTarget.candidates_from_hand(ctx, owner)
+	if hand_cards.is_empty():
+		return
+	CardEffectTargets.request(
+		ctx,
+		owner,
+		"Choose a card from your hand to trash (+3 Bev bonus).",
+		hand_cards,
+		func(chosen: Dictionary) -> void:
+			CardTarget.apply_candidate(ctx, chosen)
+			ctx.add_score(owner, 3)
+			ctx.log("%s trashed a hand card to empower Bevs (+3)." % ctx.player_name(owner))
+	)

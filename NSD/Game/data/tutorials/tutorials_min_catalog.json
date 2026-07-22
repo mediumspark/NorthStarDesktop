@@ -1,0 +1,26 @@
+{
+  "chef_cards": [
+    {
+      "code": "TUT_CHEF",
+      "chef_name": "Tutorial Chef",
+      "base_influence": 5,
+      "allowed_restaurant_r_types": ["diner", "sit_down", "fast_casual", "mobile"]
+    }
+  ],
+  "restaurant_cards": [
+    {"code": "TUT_REST_TOP", "name": "Tutorial Bistro (Top)", "r_type": "diner", "base_rating": 2},
+    {"code": "TUT_REST_BOT", "name": "Tutorial Grill (Bottom)", "r_type": "diner", "base_rating": 3}
+  ],
+  "staff_cards": [
+    {"code": "TUT_STAFF", "name": "Tutorial Server", "r_type": "diner", "influence_cost": 2}
+  ],
+  "meal_cards": [
+    {"code": "TUT_MEAL", "name": "Tutorial Soup", "r_type": "NONE", "food_rating": 2}
+  ],
+  "event_cards": [
+    {"code": "TUT_EVENT", "name": "Tutorial Inspection", "r_type": "diner", "influence_cost": 2}
+  ],
+  "support_cards": [
+    {"code": "TUT_SUPPORT", "name": "Tutorial PR", "r_type": "diner", "influence_cost": 1}
+  ]
+}

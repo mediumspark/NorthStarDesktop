@@ -28,6 +28,9 @@ var next_round_bev_cost_zero: Array = [false, false]
 
 var logs: PackedStringArray = PackedStringArray()
 
+## Set by [CardEffectTargets.request] when human must pick a card target.
+var pending_target: Dictionary = {}
+
 
 func _init(p_match: Variant, p_rng: RandomNumberGenerator) -> void:
 	match_ref = p_match

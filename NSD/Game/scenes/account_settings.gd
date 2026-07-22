@@ -3,7 +3,13 @@ extends Control
 const SCENE_MAIN := "res://scenes/main_menu.tscn"
 
 
+func _game_menu() -> Node:
+	return get_node("/root/GameMenu")
+
+
 func _ready() -> void:
+	var menu := _game_menu()
+	menu.register_context(menu.Context.SCREEN)
 	SupabaseClient.load_config()
 	SupabaseClient.load_session_file()
 	%BackButton.pressed.connect(_on_back_pressed)
@@ -13,6 +19,10 @@ func _ready() -> void:
 	_refresh_session_ui()
 	if SupabaseClient.is_session_valid():
 		_load_profile_into_form()
+
+
+func _exit_tree() -> void:
+	_game_menu().clear_context()
 
 
 func _refresh_session_ui() -> void:

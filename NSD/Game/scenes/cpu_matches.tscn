@@ -92,6 +92,70 @@ border_width_right = 2
 border_width_bottom = 2
 border_color = Color(1, 0.35, 1, 0.65)
 
+[sub_resource type="StyleBoxFlat" id="StyleBox_lock_btn"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.16, 0.52, 0.3, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.38, 0.82, 0.48, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_lock_btn_pressed"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.12, 0.42, 0.24, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.3, 0.68, 0.4, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_lock_btn_hover"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.2, 0.62, 0.36, 1)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.45, 0.92, 0.55, 1)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
+[sub_resource type="StyleBoxFlat" id="StyleBox_lock_btn_disabled"]
+content_margin_left = 10.0
+content_margin_top = 10.0
+content_margin_right = 10.0
+content_margin_bottom = 10.0
+bg_color = Color(0.14, 0.16, 0.2, 0.85)
+border_width_left = 2
+border_width_top = 2
+border_width_right = 2
+border_width_bottom = 2
+border_color = Color(0.28, 0.3, 0.36, 0.7)
+corner_radius_top_left = 40
+corner_radius_top_right = 40
+corner_radius_bottom_right = 40
+corner_radius_bottom_left = 40
+
 [sub_resource type="StyleBoxFlat" id="StyleBox_dbg_hand"]
 bg_color = Color(0.2, 0.45, 0.95, 0.28)
 border_width_left = 2
@@ -146,6 +210,7 @@ script = ExtResource("1_cpu")
 unique_name_in_owner = true
 stream = ExtResource("4_battle")
 volume_db = -8.0
+bus = &"Music"
 parameters/looping = true
 
 [node name="Background" type="ColorRect" parent="." unique_id=1873958932]
@@ -349,6 +414,14 @@ horizontal_alignment = 1
 autowrap_mode = 3
 max_lines_visible = 2
 
+[node name="CenterInfluenceLabel" type="Label" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/CenterStrip/CenterVBox" unique_id=1775479051]
+unique_name_in_owner = true
+layout_mode = 2
+theme_override_colors/font_color = Color(0.78, 0.82, 0.9, 1)
+theme_override_font_sizes/font_size = 12
+text = "Inf —"
+horizontal_alignment = 1
+
 [node name="PlayerBenchZone" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox" unique_id=1195666414]
 unique_name_in_owner = true
 layout_mode = 2
@@ -417,27 +490,50 @@ theme_override_font_sizes/font_size = 11
 text = "Inf 0/0"
 horizontal_alignment = 2
 
-[node name="ActionRail" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox" unique_id=1770980497]
+[node name="ActionRail" type="PanelContainer" parent="Margin/VBox/BattleRoot/BattleRootInner" unique_id=1770980497]
 unique_name_in_owner = true
-layout_mode = 2
+layout_mode = 1
+anchors_preset = 6
+anchor_left = 1.0
+anchor_top = 0.5
+anchor_right = 1.0
+anchor_bottom = 0.5
+offset_left = -340.0
+offset_top = -10.0
+offset_right = -8.0
+offset_bottom = 44.0
+grow_horizontal = 0
+grow_vertical = 2
 theme_override_styles/panel = SubResource("StyleBox_dbg_action")
 
-[node name="ActionHBox" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/ActionRail" unique_id=1373502553]
+[node name="ActionHBox" type="HBoxContainer" parent="Margin/VBox/BattleRoot/BattleRootInner/ActionRail" unique_id=1373502553]
 layout_mode = 2
 theme_override_constants/separation = 8
 alignment = 2
 
-[node name="RemoveLastButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/ActionRail/ActionHBox" unique_id=1423066591]
+[node name="RemoveLastButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/ActionRail/ActionHBox" unique_id=1423066591]
 unique_name_in_owner = true
 layout_mode = 2
 text = "Undo"
 
-[node name="LockSetupButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/ActionRail/ActionHBox" unique_id=642413489]
+[node name="LockSetupButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/ActionRail/ActionHBox" unique_id=642413489]
 unique_name_in_owner = true
+custom_minimum_size = Vector2(60, 50)
 layout_mode = 2
-text = "Lock line"
+theme_override_colors/font_color = Color(0.92, 0.96, 0.94, 1)
+theme_override_colors/font_pressed_color = Color(0.85, 0.92, 0.88, 1)
+theme_override_colors/font_hover_color = Color(1, 1, 1, 1)
+theme_override_colors/font_disabled_color = Color(0.5, 0.52, 0.56, 1)
+theme_override_font_sizes/font_size = 11
+theme_override_styles/normal = SubResource("StyleBox_lock_btn")
+theme_override_styles/pressed = SubResource("StyleBox_lock_btn_pressed")
+theme_override_styles/hover = SubResource("StyleBox_lock_btn_hover")
+theme_override_styles/disabled = SubResource("StyleBox_lock_btn_disabled")
+theme_override_styles/focus = SubResource("StyleBox_lock_btn_hover")
+text = "Lock in"
+autowrap_mode = 3
 
-[node name="RevealFaceoffButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/BoardChrome/BoardVBox/ActionRail/ActionHBox" unique_id=641173306]
+[node name="RevealFaceoffButton" type="Button" parent="Margin/VBox/BattleRoot/BattleRootInner/ActionRail/ActionHBox" unique_id=641173306]
 unique_name_in_owner = true
 visible = false
 layout_mode = 2
@@ -463,10 +559,7 @@ anchors_preset = 12
 anchor_top = 1.0
 anchor_right = 1.0
 anchor_bottom = 1.0
-offset_left = 355.0
-offset_top = -64.0
-offset_right = -271.0
-offset_bottom = -12.0
+offset_top = -52.0
 grow_horizontal = 2
 grow_vertical = 0
 mouse_filter = 2
@@ -496,7 +589,6 @@ theme_override_styles/panel = SubResource("StyleBox_dbg_hand_host")
 
 [node name="HandRow" type="Control" parent="Margin/VBox/BattleRoot/BattleRootInner/HandDock/HandVBox/HandFanHost" unique_id=1674805733]
 unique_name_in_owner = true
-layout_direction = 2
 layout_mode = 2
 mouse_filter = 1
 

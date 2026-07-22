@@ -2,13 +2,20 @@ extends Control
 
 const SCENE_CATALOG := "res://scenes/card_catalog.tscn"
 const SCENE_DECK := "res://scenes/deck_building.tscn"
+const SCENE_TUTORIALS := "res://scenes/tutorials/tutorial_hub.tscn"
 const SCENE_CPU := "res://scenes/cpu_matches.tscn"
 const SCENE_PVP := "res://scenes/pvp_matches.tscn"
 const SCENE_ACCOUNT := "res://scenes/account_settings.tscn"
 
 
+func _game_menu() -> Node:
+	return get_node("/root/GameMenu")
+
+
 func _ready() -> void:
 	_start_intro_music()
+	var menu := _game_menu()
+	menu.register_context(menu.Context.MAIN_MENU)
 	var icon_tex := load("res://icon.svg") as Texture2D
 	if icon_tex:
 		%AccountButton.texture_normal = icon_tex
@@ -16,8 +23,18 @@ func _ready() -> void:
 	%AccountButton.pressed.connect(_go_account)
 	%CatalogButton.pressed.connect(_go_catalog)
 	%DeckBuildingButton.pressed.connect(_go_deck)
+	%TutorialsButton.pressed.connect(_go_tutorials)
 	%CpuMatchesButton.pressed.connect(_go_cpu)
 	%PvpMatchesButton.pressed.connect(_go_pvp)
+	%ExitGameButton.pressed.connect(_on_exit_game_pressed)
+
+
+func _exit_tree() -> void:
+	_game_menu().clear_context()
+
+
+func _on_exit_game_pressed() -> void:
+	_game_menu().request_exit_game()
 
 
 func _start_intro_music() -> void:
@@ -30,6 +47,10 @@ func _go_catalog() -> void:
 
 func _go_deck() -> void:
 	get_tree().change_scene_to_file(SCENE_DECK)
+
+
+func _go_tutorials() -> void:
+	get_tree().change_scene_to_file(SCENE_TUTORIALS)
 
 
 func _go_cpu() -> void:

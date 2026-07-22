@@ -199,7 +199,7 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-columns = 3
+columns = 4
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 
@@ -271,7 +271,7 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-columns = 2
+columns = 4
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8
 
@@ -298,6 +298,6 @@ size_flags_vertical = 3
 unique_name_in_owner = true
 layout_mode = 2
 size_flags_horizontal = 3
-columns = 2
+columns = 4
 theme_override_constants/h_separation = 8
 theme_override_constants/v_separation = 8

@@ -6,6 +6,7 @@ extends RefCounted
 const _MatchEffectContext := preload("res://scripts/card_effects/match_effect_context.gd")
 const _CardEffectHelpers := preload("res://scripts/card_effects/card_effect_helpers.gd")
 const _CardTags := preload("res://scripts/card_effects/card_tags.gd")
+const _CardTarget := preload("res://scripts/card_effects/card_target.gd")
 
 signal phase_changed(phase: int)
 signal message(text: String)
@@ -57,6 +58,19 @@ var _faceoff_pending: bool = false
 
 ## Carried from prior round effect hooks (e.g. Bevs cost 0).
 var _bev_cost_zero: Array = [false, false]
+
+## Faceoff resolution state (stepped reveal + card targeting).
+var _auto_resolve_targets: bool = true
+var _pending_target_chooser: int = -1
+var _pending_target_prompt: String = ""
+var _pending_target_candidates: Array = []
+var _pending_target_resolver: Callable = Callable()
+var _faceoff_ctx = null
+var _faceoff_before_score_done: bool = false
+var _faceoff_round_end_done: bool = false
+var _faceoff_slot_resume: Dictionary = {}
+var _faceoff_scores: Dictionary = {}
+var _faceoff_hook_resume: Dictionary = {}
 
 
 func _emit_phase() -> void:
@@ -313,17 +327,233 @@ func _dup_line_entries(arr: Array) -> Array:
 
 
 func resolve_faceoff() -> Dictionary:
-	if not _faceoff_pending:
+	if not _faceoff_pending and _faceoff_ctx == null:
 		return {"ok": false, "error": "Nothing to reveal yet."}
+	_auto_resolve_targets = true
+	var begin_r := begin_faceoff_resolution()
+	if not bool(begin_r.get("ok", false)):
+		return begin_r
+	var slots := int(begin_r.get("slots", 0))
+	for slot in range(slots):
+		while true:
+			var r: Dictionary = resolve_faceoff_slot(slot)
+			while has_pending_target():
+				_auto_submit_target()
+			if bool(r.get("waiting_target", false)):
+				continue
+			break
+	while true:
+		var fin: Dictionary = finalize_faceoff_resolution()
+		while has_pending_target():
+			_auto_submit_target()
+			fin = finalize_faceoff_resolution()
+		if bool(fin.get("waiting_target", false)):
+			continue
+		if not bool(fin.get("ok", false)):
+			return fin
+		break
+	return {"ok": true}
+
+
+func set_auto_resolve_targets(enabled: bool) -> void:
+	_auto_resolve_targets = enabled
+
+
+func should_auto_resolve_target(player: int) -> bool:
+	return _auto_resolve_targets or player == P_CPU
+
+
+func enqueue_target_prompt(chooser: int, prompt: String, candidates: Array, resolver: Callable) -> void:
+	_pending_target_chooser = chooser
+	_pending_target_prompt = prompt
+	_pending_target_candidates = candidates.duplicate(true)
+	_pending_target_resolver = resolver
+	if _faceoff_ctx != null:
+		_faceoff_ctx.pending_target = get_pending_target()
+	if chooser == P_HUMAN and not should_auto_resolve_target(chooser):
+		_log("Choose a target: %s" % prompt)
+
+
+func get_pending_target() -> Dictionary:
+	if _pending_target_candidates.is_empty():
+		return {}
+	return {
+		"chooser": _pending_target_chooser,
+		"prompt": _pending_target_prompt,
+		"candidates": _pending_target_candidates.duplicate(true),
+	}
+
+
+func has_pending_target() -> bool:
+	return not _pending_target_candidates.is_empty()
+
+
+func clear_pending_target() -> void:
+	_pending_target_chooser = -1
+	_pending_target_prompt = ""
+	_pending_target_candidates.clear()
+	_pending_target_resolver = Callable()
+	if _faceoff_ctx != null:
+		_faceoff_ctx.pending_target = {}
+
+
+func submit_target(candidate_index: int) -> Dictionary:
+	if _pending_target_candidates.is_empty():
+		return {"ok": false, "error": "No target pending."}
+	if candidate_index < 0 or candidate_index >= _pending_target_candidates.size():
+		return {"ok": false, "error": "Invalid target."}
+	var picked: Dictionary = _pending_target_candidates[candidate_index] as Dictionary
+	var resolver := _pending_target_resolver
+	clear_pending_target()
+	if resolver.is_valid():
+		resolver.call(picked)
+	return {"ok": true}
+
+
+func begin_faceoff_resolution() -> Dictionary:
 	_faceoff_pending = false
 	phase = Phase.FACEOFF
 	_emit_phase()
+	_faceoff_ctx = _MatchEffectContext.new(self, _rng)
+	_faceoff_ctx.foods[P_HUMAN] = []
+	_faceoff_ctx.foods[P_CPU] = []
+	_faceoff_before_score_done = false
+	_faceoff_round_end_done = false
+	_faceoff_slot_resume.clear()
+	_faceoff_scores.clear()
+	_faceoff_hook_resume.clear()
+	clear_pending_target()
 	_log("Faceoff: revealing left to right.")
-	_run_faceoff_scoring()
+	var max_len := maxi(_setup_line[P_HUMAN].size(), _setup_line[P_CPU].size())
+	return {"ok": true, "slots": max_len}
+
+
+func resolve_faceoff_slot(slot: int) -> Dictionary:
+	if _faceoff_ctx == null:
+		var begin_r := begin_faceoff_resolution()
+		if not bool(begin_r.get("ok", false)):
+			return begin_r
+	if has_pending_target():
+		return {"ok": true, "waiting_target": true, "request": get_pending_target(), "slot": slot}
+	var start_player_i := 0
+	var skip_hook := false
+	if int(_faceoff_slot_resume.get("slot", -1)) == slot:
+		start_player_i = int(_faceoff_slot_resume.get("player_i", 0))
+		skip_hook = bool(_faceoff_slot_resume.get("skip_hook", false))
+	else:
+		_faceoff_slot_resume.clear()
+	var players := [P_HUMAN, P_CPU]
+	for pi in range(start_player_i, players.size()):
+		var player: int = players[pi]
+		var r: Dictionary = _reveal_card_at_slot(_faceoff_ctx, slot, player, skip_hook)
+		skip_hook = false
+		if bool(r.get("waiting_target", false)):
+			_faceoff_slot_resume = {"slot": slot, "player_i": pi, "skip_hook": true}
+			return {"ok": true, "waiting_target": true, "request": get_pending_target(), "slot": slot}
+		_faceoff_slot_resume.clear()
+	return {"ok": true, "slot_done": slot}
+
+
+func continue_faceoff_after_target() -> Dictionary:
+	if _faceoff_ctx == null:
+		return {"ok": false, "error": "Faceoff not started."}
+	if has_pending_target():
+		return {"ok": true, "waiting_target": true, "request": get_pending_target()}
+	if not _faceoff_before_score_done:
+		_apply_line_hooks_before_score(_faceoff_ctx)
+		if has_pending_target():
+			return {"ok": true, "waiting_target": true, "request": get_pending_target()}
+		_faceoff_before_score_done = true
+		return {"ok": true, "phase": "before_score"}
+	if _faceoff_scores.is_empty():
+		var sh := _score_player_with_ctx(_faceoff_ctx, P_HUMAN)
+		var sc := _score_player_with_ctx(_faceoff_ctx, P_CPU)
+		_faceoff_scores = {"score_h": sh, "score_c": sc}
+	if not _faceoff_round_end_done:
+		_apply_round_end_hooks(_faceoff_ctx)
+		if has_pending_target():
+			return {"ok": true, "waiting_target": true, "request": get_pending_target()}
+		_faceoff_round_end_done = true
+		return {"ok": true, "phase": "round_end"}
+	return {"ok": true, "idle": true}
+
+
+func finalize_faceoff_resolution() -> Dictionary:
+	if _faceoff_ctx == null:
+		return {"ok": false, "error": "Faceoff not started."}
+	if has_pending_target():
+		return {"ok": true, "waiting_target": true, "request": get_pending_target()}
+	if not _faceoff_before_score_done:
+		_apply_line_hooks_before_score(_faceoff_ctx)
+		if has_pending_target():
+			return {"ok": true, "waiting_target": true, "request": get_pending_target()}
+		_faceoff_before_score_done = true
+	var sh := _score_player_with_ctx(_faceoff_ctx, P_HUMAN)
+	var sc := _score_player_with_ctx(_faceoff_ctx, P_CPU)
+	_faceoff_scores = {"score_h": sh, "score_c": sc}
+	if not _faceoff_round_end_done:
+		_apply_round_end_hooks(_faceoff_ctx)
+		if has_pending_target():
+			return {"ok": true, "waiting_target": true, "request": get_pending_target()}
+		_faceoff_round_end_done = true
+	_complete_faceoff(_faceoff_ctx, sh, sc)
+	_faceoff_ctx = null
 	if phase != Phase.ENDED:
 		if not start_setup_round():
 			return {"ok": false, "error": "Cannot draw for next round."}
 	return {"ok": true}
+
+
+func _auto_submit_target() -> void:
+	if _pending_target_candidates.is_empty():
+		return
+	var idx := 0
+	if _pending_target_chooser == P_CPU:
+		idx = _CardTarget.cpu_pick_index(_pending_target_candidates, _rng)
+	else:
+		idx = 0
+	submit_target(idx)
+
+
+func _reveal_card_at_slot(ctx, slot: int, player: int, skip_hook: bool = false) -> Dictionary:
+	var line: Array = _setup_line[player]
+	if slot >= line.size():
+		return {}
+	var card: Dictionary = line[slot] as Dictionary
+	var t := str(card.get("table", ""))
+	if not skip_hook:
+		var fx: CardEffectBase = ctx.effect_for(card)
+		if fx != null and not fx.is_silenced(ctx, player):
+			fx.on_faceoff_reveal(ctx, player, slot)
+			if has_pending_target():
+				return {"waiting_target": true}
+	if t == "meal_cards":
+		var row := _resolve_row(t, str(card.get("id", "")))
+		if row.is_empty():
+			return {}
+		var foods: Array = ctx.foods[player]
+		if foods.size() >= MatchConfig.MAX_FOODS_PER_RESTAURANT:
+			foods.pop_front()
+		foods.append(row)
+	return {}
+
+
+func _complete_faceoff(ctx, score_h: int, score_c: int) -> void:
+	var stars_h_before := int(stars[P_HUMAN])
+	var stars_c_before := int(stars[P_CPU])
+	_bev_cost_zero = ctx.next_round_bev_cost_zero.duplicate()
+	_log("Scores — You: %d  CPU: %d" % [score_h, score_c])
+	_apply_star_rules_with_ctx(ctx, score_h, score_c)
+	_last_faceoff_summary = {
+		"score_h": score_h,
+		"score_c": score_c,
+		"star_h_delta": int(stars[P_HUMAN]) - stars_h_before,
+		"star_c_delta": int(stars[P_CPU]) - stars_c_before,
+	}
+	_trash_setup_lines_to_discard()
+	phase = Phase.SCORE
+	_emit_phase()
+	_check_end_immediate()
 
 
 func get_last_faceoff_summary() -> Dictionary:
@@ -349,61 +579,44 @@ func lock_setup_and_run_faceoff() -> Dictionary:
 
 
 func _run_faceoff_scoring() -> void:
-	var stars_h_before := int(stars[P_HUMAN])
-	var stars_c_before := int(stars[P_CPU])
-	var ctx = _MatchEffectContext.new(self, _rng)
-	ctx.foods[P_HUMAN] = []
-	ctx.foods[P_CPU] = []
-	_reveal_faceoff_lines(ctx)
-	_apply_line_hooks_before_score(ctx)
-	var sh := _score_player_with_ctx(ctx, P_HUMAN)
-	var sc := _score_player_with_ctx(ctx, P_CPU)
-	_apply_round_end_hooks(ctx)
-	_bev_cost_zero = ctx.next_round_bev_cost_zero.duplicate()
-	_log("Scores — You: %d  CPU: %d" % [sh, sc])
-	_apply_star_rules_with_ctx(ctx, sh, sc)
-	_last_faceoff_summary = {
-		"score_h": sh,
-		"score_c": sc,
-		"star_h_delta": int(stars[P_HUMAN]) - stars_h_before,
-		"star_c_delta": int(stars[P_CPU]) - stars_c_before,
-	}
-	_trash_setup_lines_to_discard()
-	phase = Phase.SCORE
-	_emit_phase()
-	_check_end_immediate()
-
-
-func _reveal_faceoff_lines(ctx) -> void:
+	## Legacy synchronous path — prefer [method begin_faceoff_resolution] + stepped APIs.
+	_auto_resolve_targets = true
+	begin_faceoff_resolution()
 	var max_len := maxi(_setup_line[P_HUMAN].size(), _setup_line[P_CPU].size())
 	for slot in range(max_len):
-		for player in [P_HUMAN, P_CPU]:
-			var line: Array = _setup_line[player]
-			if slot >= line.size():
-				continue
-			var card: Dictionary = line[slot] as Dictionary
-			var t := str(card.get("table", ""))
-			var fx: CardEffectBase = ctx.effect_for(card)
-			if fx != null and not fx.is_silenced(ctx, player):
-				fx.on_faceoff_reveal(ctx, player, slot)
-			if t == "meal_cards":
-				var row := _resolve_row(t, str(card.get("id", "")))
-				if row.is_empty():
-					continue
-				var foods: Array = ctx.foods[player]
-				if foods.size() >= MatchConfig.MAX_FOODS_PER_RESTAURANT:
-					foods.pop_front()
-				foods.append(row)
+		while true:
+			resolve_faceoff_slot(slot)
+			while has_pending_target():
+				_auto_submit_target()
+			if not has_pending_target():
+				break
+	while true:
+		var fin := finalize_faceoff_resolution()
+		while has_pending_target():
+			_auto_submit_target()
+			fin = finalize_faceoff_resolution()
+		if not bool(fin.get("waiting_target", false)):
+			break
 
 
 func _apply_line_hooks_before_score(ctx) -> void:
-	for player in [P_HUMAN, P_CPU]:
-		for card in _setup_line[player]:
+	var start_player := int(_faceoff_hook_resume.get("player", 0)) if str(_faceoff_hook_resume.get("phase", "")) == "before_score" else 0
+	var start_card := int(_faceoff_hook_resume.get("card", 0)) if str(_faceoff_hook_resume.get("phase", "")) == "before_score" else 0
+	_faceoff_hook_resume.clear()
+	for player_i in range(start_player, 2):
+		var player: int = P_HUMAN if player_i == 0 else P_CPU
+		var line: Array = _setup_line[player]
+		var card_start := start_card if player_i == start_player else 0
+		for card_i in range(card_start, line.size()):
+			var card: Variant = line[card_i]
 			if typeof(card) != TYPE_DICTIONARY:
 				continue
 			var fx: CardEffectBase = ctx.effect_for(card as Dictionary)
 			if fx != null and not fx.is_silenced(ctx, player):
 				fx.on_faceoff_before_score(ctx, player)
+				if has_pending_target():
+					_faceoff_hook_resume = {"phase": "before_score", "player": player_i, "card": card_i + 1}
+					return
 
 
 func _score_player_with_ctx(ctx, player: int) -> int:
@@ -441,13 +654,23 @@ func _score_player_with_ctx(ctx, player: int) -> int:
 
 
 func _apply_round_end_hooks(ctx) -> void:
-	for player in [P_HUMAN, P_CPU]:
-		for card in _setup_line[player]:
+	var start_player := int(_faceoff_hook_resume.get("player", 0)) if str(_faceoff_hook_resume.get("phase", "")) == "round_end" else 0
+	var start_card := int(_faceoff_hook_resume.get("card", 0)) if str(_faceoff_hook_resume.get("phase", "")) == "round_end" else 0
+	_faceoff_hook_resume.clear()
+	for player_i in range(start_player, 2):
+		var player: int = P_HUMAN if player_i == 0 else P_CPU
+		var line: Array = _setup_line[player]
+		var card_start := start_card if player_i == start_player else 0
+		for card_i in range(card_start, line.size()):
+			var card: Variant = line[card_i]
 			if typeof(card) != TYPE_DICTIONARY:
 				continue
 			var fx: CardEffectBase = ctx.effect_for(card as Dictionary)
 			if fx != null and not fx.is_silenced(ctx, player):
 				fx.on_round_end(ctx, player)
+				if has_pending_target():
+					_faceoff_hook_resume = {"phase": "round_end", "player": player_i, "card": card_i + 1}
+					return
 
 
 func _apply_star_rules_with_ctx(ctx, score_h: int, score_c: int) -> void:

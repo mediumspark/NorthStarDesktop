@@ -17,6 +17,7 @@ unique_name_in_owner = true
 stream = ExtResource("2_ekxnf")
 volume_db = -8.0
 autoplay = true
+bus = &"Music"
 parameters/looping = true
 
 [node name="Margin" type="MarginContainer" parent="." unique_id=796185846]
@@ -58,6 +59,12 @@ custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 text = "Deck building"
 
+[node name="TutorialsButton" type="Button" parent="Margin/Center/VBox" unique_id=664607958]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "Tutorials"
+
 [node name="CpuMatchesButton" type="Button" parent="Margin/Center/VBox" unique_id=855639589]
 unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 0)
@@ -69,6 +76,12 @@ unique_name_in_owner = true
 custom_minimum_size = Vector2(280, 0)
 layout_mode = 2
 text = "PVP matches"
+
+[node name="ExitGameButton" type="Button" parent="Margin/Center/VBox" unique_id=1946247391]
+unique_name_in_owner = true
+custom_minimum_size = Vector2(280, 0)
+layout_mode = 2
+text = "Exit Game"
 
 [node name="TopBar" type="Control" parent="." unique_id=1051031993]
 layout_mode = 1
